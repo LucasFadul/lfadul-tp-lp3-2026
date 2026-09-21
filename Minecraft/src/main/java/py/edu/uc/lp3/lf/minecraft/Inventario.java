@@ -1,6 +1,7 @@
 package py.edu.uc.lp3.lf.minecraft;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Inventario {
@@ -15,10 +16,10 @@ public class Inventario {
 	}
 
 	public List<Bloque> getItems() {
-		return items;
+		return Collections.unmodifiableList(items);
 	}
 
 	public void setItems(List<Bloque> items) {
-		this.items = items;
+		this.items = new ArrayList<>(items);
 	}
 }

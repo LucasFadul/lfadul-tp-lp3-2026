@@ -8,10 +8,12 @@ public abstract class Entidad {
 
 	public Entidad(String id, int saludMaxima) {
 		this.id = id;
-		this.saludMaxima = saludMaxima;
-		this.salud = saludMaxima;
+		this.saludMaxima = Math.max(1, saludMaxima);
+		this.salud = this.saludMaxima;
 		this.posicion = new Vector();
 	}
+
+	public abstract String getComportamiento();
 
 	public void moverse() {
 		System.out.println(getId() + " se mueve.");
@@ -50,7 +52,7 @@ public abstract class Entidad {
 	}
 
 	public void setSalud(int salud) {
-		this.salud = salud;
+		this.salud = Math.max(0, Math.min(saludMaxima, salud));
 	}
 
 	public int getSaludMaxima() {
@@ -58,6 +60,7 @@ public abstract class Entidad {
 	}
 
 	public void setSaludMaxima(int saludMaxima) {
-		this.saludMaxima = saludMaxima;
+		this.saludMaxima = Math.max(1, saludMaxima);
+		this.salud = Math.min(this.salud, this.saludMaxima);
 	}
 }

@@ -10,4 +10,9 @@ public class zombie extends Mob implements Hostil {
 		System.out.println(getId() + " ataca cuerpo a cuerpo a " + objetivo.getId());
 		objetivo.recibirDano(5);
 	}
+
+	@Override
+	public String getComportamiento() {
+		return "Persigue objetivos y ataca cuerpo a cuerpo";
+	}
 }

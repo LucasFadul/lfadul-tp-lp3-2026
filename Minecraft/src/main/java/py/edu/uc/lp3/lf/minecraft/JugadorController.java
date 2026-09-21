@@ -1,5 +1,7 @@
 package py.edu.uc.lp3.lf.minecraft;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,5 +24,16 @@ public class JugadorController {
 		jugador.setPosicion(new Vector(x, y, z));
 
 		return jugador;
+	}
+
+	@GetMapping("/entidades")
+	public List<Entidad> obtenerEntidadesPolimorficas() {
+		Entidad hostil = new Esqueleto("Skeleton", 20);
+		hostil.setPosicion(new Vector(4, 64, -2));
+
+		Entidad pacifico = new Cerdo("Pig", 10);
+		pacifico.setPosicion(new Vector(-1, 63, 7));
+
+		return List.of(hostil, pacifico);
 	}
 }

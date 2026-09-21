@@ -10,4 +10,9 @@ public class Esqueleto extends Mob implements Hostil {
 		System.out.println(getId() + " dispara una flecha a " + objetivo.getId());
 		objetivo.recibirDano(4);
 	}
+
+	@Override
+	public String getComportamiento() {
+		return "Mantiene distancia y ataca con flechas";
+	}
 }

@@ -10,4 +10,9 @@ public class creeper extends Mob implements Hostil {
 		System.out.println(getId() + " explota junto a " + objetivo.getId());
 		objetivo.recibirDano(20);
 	}
+
+	@Override
+	public String getComportamiento() {
+		return "Se acerca en silencio y explota";
+	}
 }

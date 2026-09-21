@@ -17,6 +17,11 @@ public class Jugador extends Entidad {
 		System.out.println(getId() + " coloca un bloque de " + bloque.getTipo());
 	}
 
+	@Override
+	public String getComportamiento() {
+		return "Explora, construye e interactua con el mundo";
+	}
+
 	public Inventario getInventario() {
 		return inventario;
 	}

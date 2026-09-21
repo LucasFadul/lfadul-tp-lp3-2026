@@ -15,6 +15,11 @@ public class Aldeano extends Pacifico {
 		return new ArrayList<>();
 	}
 
+	@Override
+	public String getComportamiento() {
+		return "Ofrece trueques y evita el combate";
+	}
+
 	public Profesion getProfesion() {
 		return profesion;
 	}
