@@ -64,3 +64,10 @@ sobreescritura selecciona el comportamiento por el tipo real del objeto.
 Adjuntar este Markdown en Classroom y pegar el enlace al commit final.
 Enviar `LucasFadul` al chat del curso. La carga en Classroom y el envío al chat
 son acciones a realizar por el estudiante.
+
+## Commit de la solución
+
+[Ver solución POO-06](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/a3629c95a2755ec82ca19cbc3b7f3c329f4d8bb7)
+
+Este commit contiene código, pruebas y especificaciones. El commit posterior
+únicamente incorpora este enlace de entrega.

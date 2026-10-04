@@ -181,3 +181,10 @@ El último pedido debe responder 400. Las pruebas verifican construcción, JSON,
 polimorfismo, errores del dominio, alcance del ataque y encapsulamiento.
 Las especificaciones de entrega están en [docs/ESPECIFICACIONES.md](docs/ESPECIFICACIONES.md).
 La asistencia de IA se registra en [BITACORA.md](BITACORA.md).
+
+## Commit de la solución
+
+[Ver solución POO-06](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/a3629c95a2755ec82ca19cbc3b7f3c329f4d8bb7)
+
+Este commit contiene código, pruebas y especificaciones. El commit posterior
+únicamente incorpora este enlace de entrega.
