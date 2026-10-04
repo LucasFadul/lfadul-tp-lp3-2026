@@ -1,4 +1,6 @@
-package py.edu.uc.lp3.lf.minecraft;
+package py.edu.uc.lp3;
+
+import py.edu.uc.lp3.domain.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,5 +72,47 @@ class MinecraftApplicationTests {
 		assertThatThrownBy(() -> inventario.getItems().add(new Bloque("tierra")))
 				.isInstanceOf(UnsupportedOperationException.class);
 		assertThat(inventario.getItems()).hasSize(1);
+	}
+
+	@Test
+	void indexYJugadorPorDefecto() throws Exception {
+		mockMvc.perform(get("/")).andExpect(status().isOk());
+		mockMvc.perform(get("/jugador")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value("Steve"))
+				.andExpect(jsonPath("$.salud").value(20));
+	}
+
+	@Test
+	void urlInvalidaInformaErrorDelDominio() throws Exception {
+		for (String salud : new String[]{"0", "-1"}) {
+			mockMvc.perform(get("/jugador").param("saludMaxima", salud))
+					.andExpect(status().isBadRequest())
+					.andExpect(jsonPath("$.error").value("La salud maxima debe ser positiva"));
+		}
+		mockMvc.perform(get("/jugador").param("experiencia", "-1"))
+				.andExpect(status().isBadRequest());
+		mockMvc.perform(get("/jugador").param("id", " "))
+				.andExpect(status().isBadRequest());
+		mockMvc.perform(get("/jugador").param("x", "NaN"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void constructoresYAccionSobrecargadosConservanReglas() {
+		Jugador jugador = new Jugador("Alex");
+		Esqueleto esqueleto = new Esqueleto("Skeleton");
+		assertThat(new Cerdo("Pig").getSalud()).isEqualTo(10);
+		esqueleto.atacar(jugador);
+		assertThat(jugador.getSalud()).isEqualTo(16);
+		esqueleto.atacar(jugador, 17);
+		assertThat(jugador.getSalud()).isEqualTo(16);
+		esqueleto.atacar(jugador, 16);
+		assertThat(jugador.getSalud()).isEqualTo(12);
+		assertThatThrownBy(() -> esqueleto.atacar(jugador, -1)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> jugador.recibirDano(-1)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> jugador.curar(-1)).isInstanceOf(IllegalArgumentException.class);
+		jugador.curar(Integer.MAX_VALUE);
+		assertThat(jugador.getSalud()).isEqualTo(20);
+		assertThatThrownBy(() -> new Jugador("Alex", 0)).isInstanceOf(IllegalArgumentException.class);
 	}
 }

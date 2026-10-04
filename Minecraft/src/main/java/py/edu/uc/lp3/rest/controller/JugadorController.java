@@ -1,4 +1,6 @@
-package py.edu.uc.lp3.lf.minecraft;
+package py.edu.uc.lp3.rest.controller;
+
+import py.edu.uc.lp3.domain.*;
 
 import java.util.List;
 
@@ -19,11 +21,13 @@ public class JugadorController {
 			@RequestParam(defaultValue = "0") double y,
 			@RequestParam(defaultValue = "0") double z) {
 
-		Jugador jugador = new Jugador(id, saludMaxima);
-		jugador.setExperiencia(experiencia);
-		jugador.setPosicion(new Vector(x, y, z));
+		return new Jugador(id, saludMaxima, experiencia, new Vector(x, y, z));
+	}
 
-		return jugador;
+	@org.springframework.web.bind.annotation.ExceptionHandler(IllegalArgumentException.class)
+	@org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.BAD_REQUEST)
+	public java.util.Map<String, String> errorDeDominio(IllegalArgumentException error) {
+		return java.util.Map.of("error", error.getMessage());
 	}
 
 	@GetMapping("/entidades")

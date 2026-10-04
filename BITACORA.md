@@ -225,3 +225,34 @@ sobreescritura, polimorfismo y encapsulamiento. La configuracion quedo en Java
 finales pasan correctamente. El unico punto no cerrado por codigo es la
 confirmacion externa del merge del Pull Request en el repositorio del
 companero.
+
+## Revisión individual POO-06 — 4 de octubre de 2026
+
+- Asistente/agente: OpenAI Codex.
+- Modelo informado por esta sesión: GPT-6. No se expone un identificador de variante
+  o snapshot más específico; no se inventa uno. La asistencia previa no registró
+  su modelo exacto y no se puede reconstruir con certeza.
+- Prompt del estudiante: aplicar el ejercicio POO-06 al repositorio existente,
+  publicar el HTTP con Spring Boot, seguir paquetes del template, incorporar
+  constructores y acción sobrecargados, sobreescritura abstracta con dos hijas,
+  completar README, licencia, bitácora, especificaciones y enlace al commit.
+- Fuentes leídas: enunciado del 30/09/2026, rúbrica y árbol del template oficial.
+- Cambios: separación `domain` / `rest.controller`, `Application` en paquete raíz,
+  constructores de Jugador, Esqueleto y Cerdo; ataque con distancia; rechazo de
+  parámetros inválidos por el dominio con respuesta HTTP 400; documentación y pruebas.
+- Este ejercicio es individual. La colaboración descrita en las secciones anteriores
+  corresponde a una actividad previa; no se realizó una contribución a otro alumno
+  para esta revisión.
+
+### Validación de esta revisión
+
+`./mvnw clean test`: 8 pruebas, 0 fallos, 0 errores; BUILD SUCCESS.
+Ejecutado con OpenJDK 26 compilando para Java 21.
+`./mvnw spring-boot:run`: arranque confirmado. HTTP real: saludo en `/`,
+Alex construido con salud 30 y experiencia 10, dos comportamientos distintos
+en `/entidades`, y HTTP 400 con mensaje de dominio para salud máxima 0.
+El sandbox impidió abrir el puerto inicialmente; la verificación se ejecutó
+con permiso para iniciar el servidor local. Se conservó el nombre del
+repositorio por instrucción explícita del estudiante.
+
+Se integró el historial remoto antes del push. La interfaz AtacaJugador de una contribución previa se conservó en domain y se incorporó al diagrama.

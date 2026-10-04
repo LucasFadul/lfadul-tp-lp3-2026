@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.lf.minecraft;
+package py.edu.uc.lp3.domain;
 
 public class Vector {
 	private double x;
@@ -10,9 +10,9 @@ public class Vector {
 	}
 
 	public Vector(double x, double y, double z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		setX(x);
+		setY(y);
+		setZ(z);
 	}
 
 	public double getX() {
@@ -20,6 +20,7 @@ public class Vector {
 	}
 
 	public void setX(double x) {
+		if (!Double.isFinite(x)) throw new IllegalArgumentException("La coordenada debe ser finita");
 		this.x = x;
 	}
 
@@ -28,6 +29,7 @@ public class Vector {
 	}
 
 	public void setY(double y) {
+		if (!Double.isFinite(y)) throw new IllegalArgumentException("La coordenada debe ser finita");
 		this.y = y;
 	}
 
@@ -36,6 +38,7 @@ public class Vector {
 	}
 
 	public void setZ(double z) {
+		if (!Double.isFinite(z)) throw new IllegalArgumentException("La coordenada debe ser finita");
 		this.z = z;
 	}
 

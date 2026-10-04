@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.lf.minecraft;
+package py.edu.uc.lp3.domain;
 
 public class Enderman extends Mob implements Hostil {
 	public Enderman(String id, int saludMaxima) {

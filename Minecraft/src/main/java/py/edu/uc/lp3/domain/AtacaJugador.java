@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.lf.minecraft;
+package py.edu.uc.lp3.domain;
 
 /**
  * Comportamiento agresivo de un {@link Hostil} hacia el jugador.

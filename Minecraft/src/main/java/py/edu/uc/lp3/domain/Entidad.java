@@ -1,4 +1,4 @@
-package py.edu.uc.lp3.lf.minecraft;
+package py.edu.uc.lp3.domain;
 
 public abstract class Entidad {
 	private String id;
@@ -7,8 +7,9 @@ public abstract class Entidad {
 	private int saludMaxima;
 
 	public Entidad(String id, int saludMaxima) {
-		this.id = id;
-		this.saludMaxima = Math.max(1, saludMaxima);
+		setId(id);
+		if (saludMaxima <= 0) throw new IllegalArgumentException("La salud maxima debe ser positiva");
+		this.saludMaxima = saludMaxima;
 		this.salud = this.saludMaxima;
 		this.posicion = new Vector();
 	}
@@ -20,11 +21,13 @@ public abstract class Entidad {
 	}
 
 	public void recibirDano(int cantidad) {
+		if (cantidad < 0) throw new IllegalArgumentException("El dano no puede ser negativo");
 		this.salud = Math.max(0, this.salud - cantidad);
 	}
 
 	public void curar(int cantidad) {
-		this.salud = Math.min(getSaludMaxima(), this.salud + cantidad);
+		if (cantidad < 0) throw new IllegalArgumentException("La curacion no puede ser negativa");
+		this.salud = (int) Math.min(getSaludMaxima(), (long) this.salud + cantidad);
 	}
 
 	public boolean estaVivo() {
@@ -36,6 +39,7 @@ public abstract class Entidad {
 	}
 
 	public void setId(String id) {
+		if (id == null || id.isBlank()) throw new IllegalArgumentException("El id no puede estar vacio");
 		this.id = id;
 	}
 
@@ -44,6 +48,7 @@ public abstract class Entidad {
 	}
 
 	public void setPosicion(Vector posicion) {
+		if (posicion == null) throw new IllegalArgumentException("La posicion es obligatoria");
 		this.posicion = posicion;
 	}
 
@@ -60,7 +65,8 @@ public abstract class Entidad {
 	}
 
 	public void setSaludMaxima(int saludMaxima) {
-		this.saludMaxima = Math.max(1, saludMaxima);
+		if (saludMaxima <= 0) throw new IllegalArgumentException("La salud maxima debe ser positiva");
+		this.saludMaxima = saludMaxima;
 		this.salud = Math.min(this.salud, this.saludMaxima);
 	}
 }
