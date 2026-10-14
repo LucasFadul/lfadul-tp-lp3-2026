@@ -16,6 +16,7 @@ Endpoints principales:
 - `GET /jugador?id=Alex&saludMaxima=30&experiencia=10&x=1&y=2&z=3`
 - `GET /entidades`
 - `GET /explosivos`
+- `GET /ui-capables`
 
 ## Pruebas
 
@@ -79,6 +80,15 @@ classDiagram
         +explotar() String
     }
 
+    class UICapable {
+        <<interface>>
+        +getImagen() String
+        +getPosicion() Vector
+        +getSonido() String
+        +getVelocidad() double
+        +mostrarEnUI() String
+    }
+
     class Pacifico {
         <<abstract>>
     }
@@ -102,8 +112,12 @@ classDiagram
     }
 
     class Creeper {
+        -String imagen
+        -String sonido
+        -double velocidad
         +atacar(Entidad objetivo) void
         +explotar() String
+        +mostrarEnUI() String
         +getComportamiento() String
     }
 
@@ -112,6 +126,10 @@ classDiagram
     }
 
     class Tnt {
+        -String imagen
+        -Vector posicion
+        -String sonido
+        -double velocidad
     }
 
     class Aldeano {
@@ -139,6 +157,8 @@ classDiagram
     Hostil <|.. Creeper
     Explosivo <|.. Creeper
     Explosivo <|.. Tnt
+    UICapable <|.. Creeper
+    UICapable <|.. Tnt
     Bloque <|-- Tnt
     AtacaJugador ..> Entidad
     Mob --> ComportamientoIA
@@ -191,6 +211,12 @@ implementación y `Creeper` la reemplaza con `@Override`. El endpoint
 `GET /explosivos` crea ambos objetos, los utiliza mediante el tipo de la interfaz
 y devuelve el resultado de `explotar()` como JSON.
 
+`UICapable` modela la capacidad de aparecer en una interfaz de usuario. Define
+mensajes para obtener imagen, posición, sonido y velocidad, y el mensaje textual
+`mostrarEnUI()`. `Creeper` y `Tnt` guardan sus propios datos: el Creeper reemplaza
+el mensaje `default` y la TNT lo conserva. `GET /ui-capables` trata los dos objetos
+como `UICapable` y devuelve sus propiedades y mensajes en JSON.
+
 ## Reglas y errores HTTP
 
 El constructor valida id no vacío, salud máxima positiva, experiencia no negativa
@@ -205,6 +231,7 @@ curl http://localhost:8080/
 curl 'http://localhost:8080/jugador?id=Alex&saludMaxima=30&experiencia=10&x=1&y=2&z=3'
 curl http://localhost:8080/entidades
 curl http://localhost:8080/explosivos
+curl http://localhost:8080/ui-capables
 curl -i 'http://localhost:8080/jugador?saludMaxima=0'
 ```
 

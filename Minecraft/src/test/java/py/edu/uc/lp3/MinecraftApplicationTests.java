@@ -134,4 +134,30 @@ class MinecraftApplicationTests {
 		assertThat(creeper.explotar()).isEqualTo("El creeper se acerca en silencio y explota");
 		assertThat(tnt.explotar()).isEqualTo("Explota y afecta los bloques cercanos");
 	}
+
+	@Test
+	void uiCapablesEndpointUsaInterfazEntreFamiliasDistintas() throws Exception {
+		mockMvc.perform(get("/ui-capables"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].tipo").value("Creeper"))
+				.andExpect(jsonPath("$[0].imagen").value("creeper.png"))
+				.andExpect(jsonPath("$[0].posicion.y").value(64.0))
+				.andExpect(jsonPath("$[0].sonido").value("creeper.ogg"))
+				.andExpect(jsonPath("$[0].velocidad").value(0.25))
+				.andExpect(jsonPath("$[0].mensaje").value("Creeper animado en (4.0, 64.0, -2.0) con sonido creeper.ogg"))
+				.andExpect(jsonPath("$[1].tipo").value("TNT"))
+				.andExpect(jsonPath("$[1].imagen").value("tnt.png"))
+				.andExpect(jsonPath("$[1].posicion.x").value(8.0))
+				.andExpect(jsonPath("$[1].sonido").value("tnt.ogg"))
+				.andExpect(jsonPath("$[1].velocidad").value(0.0));
+	}
+
+	@Test
+	void tntUsaMensajeDefaultDeUICapable() {
+		UICapable tnt = new Tnt(new Vector(1, 2, 3));
+
+		assertThat(tnt.mostrarEnUI())
+				.isEqualTo("Muestra tnt.png en (1.0, 2.0, 3.0) con sonido tnt.ogg y velocidad 0.0");
+		assertThatThrownBy(() -> new Tnt(null)).isInstanceOf(IllegalArgumentException.class);
+	}
 }

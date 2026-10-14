@@ -274,3 +274,19 @@ Se integró el historial remoto antes del push. La interfaz AtacaJugador de una 
   respuesta JSON de `GET /explosivos`. También se inició la aplicación con
   `./mvnw spring-boot:run`: el endpoint respondió HTTP 200 con los mensajes de
   `Creeper` y `TNT`.
+
+### Ampliación UICapable
+
+- Prompt del estudiante: incorporar también la capacidad `UICapable` con imagen,
+  posición, sonido y velocidad.
+- Diseño: la interfaz declara métodos para consultar esos datos y un mensaje
+  `mostrarEnUI()` que devuelve texto. Los datos pertenecen a cada objeto, ya que
+  los campos de una interfaz Java serían constantes compartidas.
+- Implementación: `Creeper` y `Tnt`, provenientes de familias distintas,
+  implementan `UICapable`. `Creeper` reemplaza `mostrarEnUI()` y `Tnt` conserva
+  el método `default`.
+- Servicio REST: `GET /ui-capables` pide todos los datos mediante variables del
+  tipo `UICapable` y responde JSON.
+- Verificación: `./mvnw clean test` ejecutó 12 pruebas, sin fallos ni errores.
+  La comprobación HTTP real respondió 200 y devolvió imagen, posición, sonido,
+  velocidad y mensaje para `Creeper` y `TNT`.
