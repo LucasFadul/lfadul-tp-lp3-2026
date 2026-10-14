@@ -15,6 +15,7 @@ Endpoints principales:
 - `GET /`
 - `GET /jugador?id=Alex&saludMaxima=30&experiencia=10&x=1&y=2&z=3`
 - `GET /entidades`
+- `GET /explosivos`
 
 ## Pruebas
 
@@ -73,6 +74,11 @@ classDiagram
         +atacar(Entidad atacante, Entidad objetivo) void
     }
 
+    class Explosivo {
+        <<interface>>
+        +explotar() String
+    }
+
     class Pacifico {
         <<abstract>>
     }
@@ -95,9 +101,17 @@ classDiagram
         +getComportamiento() String
     }
 
-    class creeper {
+    class Creeper {
         +atacar(Entidad objetivo) void
+        +explotar() String
         +getComportamiento() String
+    }
+
+    class Bloque {
+        -String tipo
+    }
+
+    class Tnt {
     }
 
     class Aldeano {
@@ -116,13 +130,16 @@ classDiagram
     Mob <|-- Esqueleto
     Mob <|-- Enderman
     Mob <|-- zombie
-    Mob <|-- creeper
+    Mob <|-- Creeper
     Pacifico <|-- Aldeano
     Pacifico <|-- Cerdo
     Hostil <|.. Esqueleto
     Hostil <|.. Enderman
     Hostil <|.. zombie
-    Hostil <|.. creeper
+    Hostil <|.. Creeper
+    Explosivo <|.. Creeper
+    Explosivo <|.. Tnt
+    Bloque <|-- Tnt
     AtacaJugador ..> Entidad
     Mob --> ComportamientoIA
     Jugador --> Inventario
@@ -139,7 +156,8 @@ Siguiendo el [template](https://github.com/alefq/lp3-template-tp/tree/main/src/m
 
 - `Application.java`: arranque de Spring Boot y escaneo de subpaquetes.
 - `domain/`: todas las clases del modelo y sus reglas.
-- `rest/controller/`: `IndexController` y `JugadorController`.
+- `rest/controller/`: controllers de inicio, jugadores y explosivos.
+- `rest/response/`: respuestas JSON específicas de los servicios REST.
 
 ## Sobrecarga y sobreescritura
 
@@ -161,6 +179,18 @@ Son firmas distintas de la misma acción en la misma clase.
 `GET /entidades` devuelve `List<Entidad>`: el JSON incluye `comportamiento`
 calculado por cada implementación concreta. El controller usa el tipo padre.
 
+## Interfaz compartida entre familias distintas
+
+`Explosivo` representa una capacidad compartida por clases sin un padre común
+del dominio. `Creeper` pertenece a la familia `Entidad -> Mob`, mientras que
+`Tnt` pertenece a la familia `Bloque`. Las dos implementan la interfaz y pueden
+tratarse como `Explosivo`.
+
+La interfaz define `explotar()` con un mensaje `default`. `Tnt` conserva esa
+implementación y `Creeper` la reemplaza con `@Override`. El endpoint
+`GET /explosivos` crea ambos objetos, los utiliza mediante el tipo de la interfaz
+y devuelve el resultado de `explotar()` como JSON.
+
 ## Reglas y errores HTTP
 
 El constructor valida id no vacío, salud máxima positiva, experiencia no negativa
@@ -174,6 +204,7 @@ curación negativos se rechazan, y una curación grande no desborda.
 curl http://localhost:8080/
 curl 'http://localhost:8080/jugador?id=Alex&saludMaxima=30&experiencia=10&x=1&y=2&z=3'
 curl http://localhost:8080/entidades
+curl http://localhost:8080/explosivos
 curl -i 'http://localhost:8080/jugador?saludMaxima=0'
 ```
 

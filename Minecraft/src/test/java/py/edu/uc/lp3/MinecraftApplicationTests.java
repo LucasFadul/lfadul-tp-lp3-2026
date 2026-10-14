@@ -115,4 +115,23 @@ class MinecraftApplicationTests {
 		assertThat(jugador.getSalud()).isEqualTo(20);
 		assertThatThrownBy(() -> new Jugador("Alex", 0)).isInstanceOf(IllegalArgumentException.class);
 	}
+
+	@Test
+	void explosivosEndpointUsaInterfazEntreFamiliasDistintas() throws Exception {
+		mockMvc.perform(get("/explosivos"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].tipo").value("Creeper"))
+				.andExpect(jsonPath("$[0].mensaje").value("El creeper se acerca en silencio y explota"))
+				.andExpect(jsonPath("$[1].tipo").value("TNT"))
+				.andExpect(jsonPath("$[1].mensaje").value("Explota y afecta los bloques cercanos"));
+	}
+
+	@Test
+	void creeperReemplazaDefaultYTntLoConserva() {
+		Explosivo creeper = new Creeper("Creeper", 20);
+		Explosivo tnt = new Tnt();
+
+		assertThat(creeper.explotar()).isEqualTo("El creeper se acerca en silencio y explota");
+		assertThat(tnt.explotar()).isEqualTo("Explota y afecta los bloques cercanos");
+	}
 }

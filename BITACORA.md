@@ -65,7 +65,7 @@ clases concretas del modelo se encuentran:
 - `Jugador`, entidad controlada por el usuario.
 - `Esqueleto`, mob hostil que ataca con una flecha.
 - `Enderman`, mob hostil que se teletransporta y ataca.
-- `zombie` y `creeper`, otras especializaciones hostiles.
+- `zombie` y `Creeper`, otras especializaciones hostiles.
 - `Aldeano` y `Cerdo`, especializaciones pacificas.
 
 Los comportamientos `Hostil` y `ComportamientoIA` se representan mediante
@@ -256,3 +256,21 @@ con permiso para iniciar el servidor local. Se conservó el nombre del
 repositorio por instrucción explícita del estudiante.
 
 Se integró el historial remoto antes del push. La interfaz AtacaJugador de una contribución previa se conservó en domain y se incorporó al diagrama.
+
+## Interfaz entre familias distintas — 14 de octubre de 2026
+
+- Asistente/agente: OpenAI Codex.
+- Modelo informado por esta sesión: GPT-5.
+- Prompt del estudiante: explicar la diferencia entre interfaz y herencia y
+  aplicar el ejercicio de una capacidad compartida por clases de familias
+  distintas al dominio Minecraft.
+- Decisión de modelado: `Creeper` pertenece a `Entidad -> Mob` y `Tnt` pertenece
+  a `Bloque`; ambas implementan `Explosivo` porque pueden explotar.
+- Implementación: `Explosivo.explotar()` devuelve texto y tiene una implementación
+  `default`; `Tnt` la conserva y `Creeper` la sobrescribe. `GET /explosivos`
+  utiliza ambas instancias mediante el tipo `Explosivo` y responde JSON.
+- Verificación: `./mvnw clean test` ejecutó 10 pruebas, sin fallos ni errores.
+  Las pruebas cubren el comportamiento `default`, la sobrescritura y la
+  respuesta JSON de `GET /explosivos`. También se inició la aplicación con
+  `./mvnw spring-boot:run`: el endpoint respondió HTTP 200 con los mensajes de
+  `Creeper` y `TNT`.
