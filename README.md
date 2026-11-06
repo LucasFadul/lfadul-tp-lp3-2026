@@ -373,6 +373,12 @@ Importar `insomnia/minecraft-poo08.json` mediante **Import → File** en Insomni
 
 ## Commit de la solución
 
+### POO-08
+
+[Ver solución POO-08](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/dabf8ac9e5befc5d1ebef1b12810a207e89f8f66)
+
+### POO-06
+
 [Ver solución POO-06](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/a3629c95a2755ec82ca19cbc3b7f3c329f4d8bb7)
 
 Este commit contiene código, pruebas y especificaciones. El commit posterior

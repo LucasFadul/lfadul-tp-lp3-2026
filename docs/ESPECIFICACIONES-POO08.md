@@ -1,5 +1,7 @@
 # Especificaciones aplicadas — POO-08 Minecraft
 
+Commit de la solución: [dabf8ac9e5befc5d1ebef1b12810a207e89f8f66](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/dabf8ac9e5befc5d1ebef1b12810a207e89f8f66).
+
 ## Objetivo
 
 Publicar un servicio REST de Minecraft con entidades polimórficas persistidas en H2 y una simulación de explosión que conserva el estado de la TNT, el objetivo y el resultado.
