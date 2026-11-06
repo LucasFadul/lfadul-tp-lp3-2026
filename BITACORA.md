@@ -290,3 +290,12 @@ Se integró el historial remoto antes del push. La interfaz AtacaJugador de una 
 - Verificación: `./mvnw clean test` ejecutó 12 pruebas, sin fallos ni errores.
   La comprobación HTTP real respondió 200 y devolvió imagen, posición, sonido,
   velocidad y mensaje para `Creeper` y `TNT`.
+
+## POO-08 individual — 6 de noviembre de 2026
+
+- Asistente/agente: OpenAI Codex.
+- Modelo informado por la sesión: GPT-6. El entorno no expone aquí un identificador de variante o snapshot más preciso; no se inventa.
+- Resumen de solicitudes: construir CRUD REST con Spring Data y H2 para Entidad; explicar y probar la persistencia; añadir simulación de explosiones con tres clases y una jerarquía de excepciones; completar los requisitos individuales de POO-08, colección Insomnia, documentación y especificaciones.
+- Se consultaron el enunciado POO-08 y la rúbrica enlazados por el estudiante. No se delegó el trabajo a otros agentes ni se colaboró sobre el repositorio de otro estudiante.
+- Se amplió la persistencia JPA polimórfica y la simulación transaccional con TNT consumible y registro de explosiones; se documentaron las reglas, el arranque y las decisiones del dominio.
+- Verificación: `./mvnw -q test -Dspring.datasource.url=jdbc:h2:mem:fullverify -Dspring.jpa.hibernate.ddl-auto=create-drop`: 22 pruebas sin fallos. Se inició el servidor desde la raíz con una base temporal, se recorrieron por HTTP las 24 solicitudes de la colección y se comprobó la persistencia de entidad, TNT y explosión tras reiniciar. El archivo JSON se validó sintácticamente; la importación en la interfaz de Insomnia no se automatizó.

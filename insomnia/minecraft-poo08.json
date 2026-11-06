@@ -1,0 +1,369 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-11-06T00:00:00.000Z",
+  "__export_source": "codex",
+  "resources": [
+    {
+      "_id": "wrk_minecraft_poo08",
+      "_type": "workspace",
+      "name": "Minecraft POO-08",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_minecraft_poo08",
+      "_type": "environment",
+      "parentId": "wrk_minecraft_poo08",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "explosion_id": 1
+      }
+    },
+    {
+      "_id": "fld_minecraft_poo08",
+      "_type": "request_group",
+      "parentId": "wrk_minecraft_poo08",
+      "name": "Recorrido en orden"
+    },
+    {
+      "_id": "req_minecraft_00",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "01 Servicio vivo",
+      "method": "GET",
+      "url": "{{ _.base_url }}/",
+      "description": "Resultado esperado: HTTP 200",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_01",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "02 Crear cerdo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/entidades",
+      "description": "Resultado esperado: HTTP 201",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"cerdo-insomnia\",\n  \"tipo\": \"CERDO\",\n  \"saludMaxima\": 20,\n  \"posicion\": {\n    \"x\": 0,\n    \"y\": 0,\n    \"z\": 0\n  }\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_02",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "03 Crear jugador",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/entidades",
+      "description": "Resultado esperado: HTTP 201",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"jugador-insomnia\",\n  \"tipo\": \"JUGADOR\",\n  \"saludMaxima\": 20,\n  \"experiencia\": 3,\n  \"posicion\": {\n    \"x\": 0,\n    \"y\": 0,\n    \"z\": 0\n  }\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_03",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "04 Listar entidades",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/entidades",
+      "description": "Resultado esperado: HTTP 200",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_04",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "05 Consultar cerdo",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/entidades/cerdo-insomnia",
+      "description": "Resultado esperado: HTTP 200",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_05",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "06 Actualizar cerdo",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/entidades/cerdo-insomnia",
+      "description": "Resultado esperado: HTTP 200",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"cerdo-insomnia\",\n  \"tipo\": \"CERDO\",\n  \"saludMaxima\": 20,\n  \"salud\": 18,\n  \"posicion\": {\n    \"x\": 0,\n    \"y\": 0,\n    \"z\": 0\n  }\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_06",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "07 Consultar actualizacion",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/entidades/cerdo-insomnia",
+      "description": "Resultado esperado: HTTP 200 salud 18",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_07",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "08 Invariante invalido",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/entidades",
+      "description": "Resultado esperado: HTTP 400 EntidadInvalidaException",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"invalida-insomnia\",\n  \"tipo\": \"CERDO\",\n  \"saludMaxima\": 0\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_08",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "09 Verificar que no se creo",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/entidades/invalida-insomnia",
+      "description": "Resultado esperado: HTTP 404 EntidadNotFoundException",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_09",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "10 ID duplicado",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/entidades",
+      "description": "Resultado esperado: HTTP 409 EntidadConflictException",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"cerdo-insomnia\",\n  \"tipo\": \"CERDO\",\n  \"saludMaxima\": 10\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_10",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "11 Protocolo Explosivo",
+      "method": "GET",
+      "url": "{{ _.base_url }}/explosivos",
+      "description": "Resultado esperado: HTTP 200 TNT y Creeper",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_11",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "12 Crear TNT",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/tnts",
+      "description": "Resultado esperado: HTTP 201",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"tnt-insomnia\",\n  \"posicion\": {\n    \"x\": 3,\n    \"y\": 0,\n    \"z\": 0\n  }\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_12",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "13 Simular explosion",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/explosiones",
+      "description": "Resultado esperado: HTTP 201 salud 18 -> 10",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tntId\": \"tnt-insomnia\",\n  \"objetivoId\": \"cerdo-insomnia\"\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_13",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "14 Verificar salud",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/entidades/cerdo-insomnia",
+      "description": "Resultado esperado: HTTP 200 salud 10",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_14",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "15 Verificar TNT consumida",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/tnts/tnt-insomnia",
+      "description": "Resultado esperado: HTTP 200 detonada true",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_15",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "16 Verificar explosion por id",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/explosiones/{{ _.explosion_id }}",
+      "description": "Resultado esperado: HTTP 200 ajustar explosion_id al id devuelto",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_16",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "17 Repetir TNT",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/explosiones",
+      "description": "Resultado esperado: HTTP 409 TntDetonadaException",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tntId\": \"tnt-insomnia\",\n  \"objetivoId\": \"cerdo-insomnia\"\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_17",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "18 Crear objetivo sin vida",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/entidades",
+      "description": "Resultado esperado: HTTP 201",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"muerto-insomnia\",\n  \"tipo\": \"CERDO\",\n  \"saludMaxima\": 10,\n  \"salud\": 0\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_18",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "19 Crear TNT para objetivo muerto",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/tnts",
+      "description": "Resultado esperado: HTTP 201",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"tnt-muerto-insomnia\",\n  \"posicion\": {\n    \"x\": 0,\n    \"y\": 0,\n    \"z\": 0\n  }\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_19",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "20 Objetivo sin vida",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/explosiones",
+      "description": "Resultado esperado: HTTP 409 EntidadSinVidaException",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tntId\": \"tnt-muerto-insomnia\",\n  \"objetivoId\": \"muerto-insomnia\"\n}"
+      }
+    },
+    {
+      "_id": "req_minecraft_20",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "21 Verificar TNT no consumida",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/tnts/tnt-muerto-insomnia",
+      "description": "Resultado esperado: HTTP 200 detonada false",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_21",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "22 TNT inexistente",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/tnts/tnt-inexistente-insomnia",
+      "description": "Resultado esperado: HTTP 404 TntNotFoundException",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_22",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "23 Borrar jugador",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/entidades/jugador-insomnia",
+      "description": "Resultado esperado: HTTP 204",
+      "headers": []
+    },
+    {
+      "_id": "req_minecraft_23",
+      "_type": "request",
+      "parentId": "fld_minecraft_poo08",
+      "name": "24 Consultar borrado",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/entidades/jugador-insomnia",
+      "description": "Resultado esperado: HTTP 404",
+      "headers": []
+    }
+  ]
+}
