@@ -16,6 +16,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import py.edu.uc.lp3.rest.dto.EntidadRequest;
 import py.edu.uc.lp3.rest.dto.EntidadResponse;
+import py.edu.uc.lp3.rest.dto.ExplosionRequest;
+import py.edu.uc.lp3.rest.dto.SimulacionExplosionResponse;
 import py.edu.uc.lp3.service.EntidadService;
 
 @RestController
@@ -27,6 +29,12 @@ public class EntidadController {
 
 	@GetMapping
 	public List<EntidadResponse> listar() { return service.listar(); }
+
+	@PostMapping("/{id}/explosiones")
+	public SimulacionExplosionResponse simularExplosion(@PathVariable String id,
+			@RequestBody ExplosionRequest request) {
+		return service.simularExplosion(id, request);
+	}
 
 	@GetMapping("/{id}")
 	public EntidadResponse obtener(@PathVariable String id) { return service.obtener(id); }

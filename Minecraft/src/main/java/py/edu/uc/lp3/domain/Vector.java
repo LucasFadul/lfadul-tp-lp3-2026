@@ -46,4 +46,9 @@ public class Vector {
 	public String toString() {
 		return "(" + x + ", " + y + ", " + z + ")";
 	}
+
+	public double distanciaHasta(Vector otra) {
+		if (otra == null) throw new IllegalArgumentException("La posicion es obligatoria");
+		return Math.hypot(Math.hypot(x - otra.x, y - otra.y), z - otra.z);
+	}
 }
