@@ -400,7 +400,7 @@ Importar `insomnia/minecraft-poo08.json` mediante **Import → File** en Insomni
 
 ### POO-08
 
-[Ver solución POO-08](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/dabf8ac9e5befc5d1ebef1b12810a207e89f8f66)
+[Ver solución POO-08](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/bf8efcafbcb9f9ef5ab980ce636536a461a1161b)
 
 ### POO-06
 

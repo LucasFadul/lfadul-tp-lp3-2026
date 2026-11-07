@@ -1,6 +1,6 @@
 # Especificaciones aplicadas — POO-08 Minecraft
 
-Commit de la solución: [dabf8ac9e5befc5d1ebef1b12810a207e89f8f66](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/dabf8ac9e5befc5d1ebef1b12810a207e89f8f66).
+Commit de la solución: [bf8efcafbcb9f9ef5ab980ce636536a461a1161b](https://github.com/LucasFadul/lfadul-tp-lp3-2026/commit/bf8efcafbcb9f9ef5ab980ce636536a461a1161b).
 
 ## Objetivo
 
