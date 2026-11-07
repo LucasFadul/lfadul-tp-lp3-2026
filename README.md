@@ -314,29 +314,54 @@ En `POST /api/explosiones`, `Tnt`, `Entidad` y `Vector` colaboran: la TNT compru
 
 ```mermaid
 classDiagram
-    class Entidad { <<abstract>> +getComportamiento() String +recibirDano(int) }
+    class Entidad {
+        <<abstract>>
+        +getComportamiento() String
+        +recibirDano(int)
+    }
+    class Mob
+    class Pacifico
+    class Bloque
     class Cerdo
     class Jugador
-    class Tnt { +explotar(Entidad) int }
-    class Vector { +distanciaHasta(Vector) double }
-    class Explosivo { <<interface>> +explotar() String }
+    class Tnt {
+        +explotar(Entidad) int
+    }
+    class Vector {
+        +distanciaHasta(Vector) double
+    }
+    class Explosivo {
+        <<interface>>
+        +explotar() String
+    }
     class Creeper
-    class EntidadEntity { <<abstract JPA>> }
+    class EntidadEntity {
+        <<abstract>>
+    }
     class CerdoEntity
     class JugadorEntity
-    class EntidadRepository { <<interface>> }
+    class EntidadRepository {
+        <<interface>>
+    }
     class EntidadController
     class EntidadService
     class ExplosionService
     class SimulacionController
-    class MinecraftException { <<abstract>> }
-    class EntidadException { <<abstract>> }
+    class MinecraftException {
+        <<abstract>>
+    }
+    class EntidadException {
+        <<abstract>>
+    }
     class EntidadSinVidaException
     class TntDetonadaException
     class ApiExceptionHandler
-    Entidad <|-- Cerdo
+    Entidad <|-- Mob
+    Mob <|-- Pacifico
+    Pacifico <|-- Cerdo
     Entidad <|-- Jugador
-    Entidad <|-- Creeper
+    Mob <|-- Creeper
+    Bloque <|-- Tnt
     Explosivo <|.. Tnt
     Explosivo <|.. Creeper
     Tnt --> Vector : posición
