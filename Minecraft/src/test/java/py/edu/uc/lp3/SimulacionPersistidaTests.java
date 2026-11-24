@@ -8,6 +8,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import py.edu.uc.lp3.persistence.ExplosionRepository;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SimulacionPersistidaTests {
 	@Autowired MockMvc mvc;
 	@Autowired EntityManager entityManager;
+	@Autowired ExplosionRepository explosiones;
 
 	@Test
 	void crudConDosHijasYExplosionGuardaAmbosEstados() throws Exception {
@@ -35,10 +38,12 @@ class SimulacionPersistidaTests {
 		mvc.perform(get("/api/entidades/pig")).andExpect(jsonPath("$.salud").value(12));
 		mvc.perform(get("/api/tnts/t1")).andExpect(jsonPath("$.detonada").value(true));
 		mvc.perform(get("/api/explosiones/1")).andExpect(status().isOk()).andExpect(jsonPath("$.objetivoId").value("pig"));
+		long cantidadAntes = explosiones.count();
 		mvc.perform(post("/api/explosiones").contentType(MediaType.APPLICATION_JSON)
 				.content("{\"tntId\":\"t1\",\"objetivoId\":\"pig\"}"))
 				.andExpect(status().isConflict()).andExpect(jsonPath("$.error").value("La TNT ya fue detonada"));
 		mvc.perform(get("/api/entidades/pig")).andExpect(jsonPath("$.salud").value(12));
+		assertThat(explosiones.count()).isEqualTo(cantidadAntes);
 		mvc.perform(put("/api/entidades/steve").contentType(MediaType.APPLICATION_JSON)
 				.content("{\"id\":\"steve\",\"tipo\":\"JUGADOR\",\"saludMaxima\":30,\"experiencia\":5}"))
 				.andExpect(status().isOk());

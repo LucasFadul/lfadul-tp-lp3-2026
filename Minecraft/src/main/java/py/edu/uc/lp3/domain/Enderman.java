@@ -6,12 +6,6 @@ public class Enderman extends Mob implements Hostil {
 	}
 
 	@Override
-	public void atacar(Entidad objetivo) {
-		System.out.println(getId() + " teletransporta y ataca a " + objetivo.getId());
-		objetivo.recibirDano(7);
-	}
-
-	@Override
 	public String getComportamiento() {
 		return "Se teletransporta para acechar y atacar";
 	}

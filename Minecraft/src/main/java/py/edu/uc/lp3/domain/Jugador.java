@@ -45,7 +45,6 @@ public class Jugador extends Entidad {
 	}
 
 	public void setExperiencia(int experiencia) {
-		if (experiencia < 0) throw new IllegalArgumentException("La experiencia debe ser no negativa");
 		this.experiencia = experiencia;
 	}
 }

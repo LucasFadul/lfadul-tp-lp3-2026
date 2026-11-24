@@ -1,0 +1,224 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-11-22T00:00:00.000Z",
+  "__export_source": "codex",
+  "resources": [
+    {
+      "_id": "wrk_poo09",
+      "_type": "workspace",
+      "name": "Minecraft POO-09 (preliminar)",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_poo09",
+      "_type": "environment",
+      "parentId": "wrk_poo09",
+      "name": "Base Environment",
+      "data": {
+        "a1_url": "http://localhost:8080",
+        "a2_url": "http://25.28.15.25:8080",
+        "a3_url": "http://25.29.140.0:8080",
+        "creeper_a2": 1,
+        "jugador_a3": "steve",
+        "tnt_id": "tnt-poo09",
+        "objetivo_id": "pig-poo09",
+        "jugada_id": 1
+      }
+    },
+    {
+      "_id": "req_poo09_openapi_a1",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "OpenAPI A1",
+      "method": "GET",
+      "url": "{{ _.a1_url }}/v3/api-docs",
+      "description": "Consultar el contrato publicado.",
+      "headers": []
+    },
+    {
+      "_id": "req_poo09_openapi_a2",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "OpenAPI A2",
+      "method": "GET",
+      "url": "{{ _.a2_url }}/v3/api-docs",
+      "description": "A2: pendiente contrato publicado en su último commit.",
+      "headers": []
+    },
+    {
+      "_id": "req_poo09_openapi_a3",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "OpenAPI A3",
+      "method": "GET",
+      "url": "{{ _.a3_url }}/v3/api-docs",
+      "description": "Consultar el contrato publicado.",
+      "headers": []
+    },
+    {
+      "_id": "req_poo09_consulta_1",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "A2 - Listar creepers listos (lectura)",
+      "method": "GET",
+      "url": "{{ _.a2_url }}/entidades/creepers/listos",
+      "description": "Consulta preliminar de solo lectura; no ejecuta el escenario POO-09.",
+      "headers": []
+    },
+    {
+      "_id": "req_poo09_consulta_2",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "A3 - Listar entidades vivas (lectura)",
+      "method": "GET",
+      "url": "{{ _.a3_url }}/entidades/vivos",
+      "description": "Consulta preliminar de solo lectura; no ejecuta el escenario POO-09.",
+      "headers": []
+    },
+    {
+      "_id": "req_p09_local1",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "01 Crear objetivo local",
+      "method": "POST",
+      "url": "{{ _.a1_url }}/api/entidades",
+      "description": "Esperado 201. Cambiar ids al repetir.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"id\":\"{{ _.objetivo_id }}\",\"tipo\":\"CERDO\",\"saludMaxima\":20,\"posicion\":{\"x\":0,\"y\":0,\"z\":0}}"
+      }
+    },
+    {
+      "_id": "req_p09_local2",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "02 Crear TNT local",
+      "method": "POST",
+      "url": "{{ _.a1_url }}/api/tnts",
+      "description": "Esperado 201; distancia 3.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"id\":\"{{ _.tnt_id }}\",\"posicion\":{\"x\":3,\"y\":0,\"z\":0}}"
+      }
+    },
+    {
+      "_id": "req_p09_base",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "03 Consultar objetivo local",
+      "method": "GET",
+      "url": "{{ _.a1_url }}/api/entidades/{{ _.objetivo_id }}",
+      "description": "Comprobar salud antes y después de cada caso.",
+      "headers": []
+    },
+    {
+      "_id": "req_p09_tnt",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "04 Consultar TNT local",
+      "method": "GET",
+      "url": "{{ _.a1_url }}/api/tnts/{{ _.tnt_id }}",
+      "description": "Comprobar detonada antes y después de cada caso.",
+      "headers": []
+    },
+    {
+      "_id": "req_p09_a2fail",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "05 Rechazo atribuido A2",
+      "method": "POST",
+      "url": "{{ _.a1_url }}/api/jugadas",
+      "description": "Esperado 422 con origen A2 si el ID no está en la lista; repetir consultas 03 y 04.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"creeperA2\":999999999,\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\"}"
+      }
+    },
+    {
+      "_id": "req_p09_a3fail",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "06 Rechazo atribuido A3",
+      "method": "POST",
+      "url": "{{ _.a1_url }}/api/jugadas",
+      "description": "Esperado 422 con origen A3 si A2 confirma y ese jugador no está en la lista; repetir consultas 03 y 04.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"creeperA2\":{{ _.creeper_a2 }},\"jugadorA3\":\"jugador-inexistente-poo09\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\"}"
+      }
+    },
+    {
+      "_id": "req_p09_feliz",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "07 Ambas consultas confirman",
+      "method": "POST",
+      "url": "{{ _.a1_url }}/api/jugadas",
+      "description": "Esperado 201; elegir ids que aparezcan en las listas. Copiar id a jugada_id.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"creeperA2\":{{ _.creeper_a2 }},\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\"}"
+      }
+    },
+    {
+      "_id": "req_p09_get",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "08 Consultar jugada",
+      "method": "GET",
+      "url": "{{ _.a1_url }}/api/jugadas/{{ _.jugada_id }}",
+      "description": "Usar el id de la respuesta 201; consultar también 03 y 04.",
+      "headers": []
+    },
+    {
+      "_id": "req_poo09_validar_lucas",
+      "_type": "request",
+      "parentId": "wrk_poo09",
+      "name": "A1 - Validar explosión sin guardar",
+      "method": "POST",
+      "url": "{{ _.a1_url }}/api/entidades/{{ _.objetivo_id }}/explosiones/validar",
+      "description": "200 simula daño sin modificar salud; 409 objetivo sin vida; 404 inexistente. No valida una TNT persistida.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"posicion\":{\"x\":3,\"y\":0,\"z\":0}}"
+      }
+    }
+  ]
+}

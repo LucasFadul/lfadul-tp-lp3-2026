@@ -2,8 +2,6 @@ package py.edu.uc.lp3.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import py.edu.uc.lp3.domain.Entidad;
-import py.edu.uc.lp3.domain.Tnt;
 import py.edu.uc.lp3.domain.Vector;
 import py.edu.uc.lp3.domain.exception.EntidadConflictException;
 import py.edu.uc.lp3.domain.exception.EntidadInvalidaException;
@@ -17,14 +15,15 @@ public class ExplosionService {
 	private final TntRepository tnts;
 	private final EntidadRepository entidades;
 	private final ExplosionRepository explosiones;
-	private final EntidadService entidadService;
+	private final ReglasExplosionService reglas;
 
-	public ExplosionService(TntRepository tnts, EntidadRepository entidades, ExplosionRepository explosiones, EntidadService entidadService) {
-		this.tnts = tnts; this.entidades = entidades; this.explosiones = explosiones; this.entidadService = entidadService;
+	public ExplosionService(TntRepository tnts, EntidadRepository entidades, ExplosionRepository explosiones, ReglasExplosionService reglas) {
+		this.tnts = tnts; this.entidades = entidades; this.explosiones = explosiones; this.reglas = reglas;
 	}
 
 	public TntEntity crearTnt(String id, Vector posicion) {
 		if (id == null || id.isBlank() || posicion == null) throw new EntidadInvalidaException("Id y posicion de TNT son obligatorios");
+		reglas.validarPosicion(posicion);
 		id = id.trim();
 		if (tnts.existsById(id)) throw new EntidadConflictException("Ya existe una TNT con id " + id);
 		return tnts.save(new TntEntity(id, posicion));
@@ -41,13 +40,13 @@ public class ExplosionService {
 		TntEntity registroTnt = tnts.buscarParaDetonar(tntId).orElseThrow(() -> new TntNotFoundException(tntId));
 		EntidadEntity registroObjetivo = entidades.buscarParaExplosion(objetivoId)
 				.orElseThrow(() -> new EntidadNotFoundException("No existe una entidad con id " + objetivoId));
-		Tnt tnt = registroTnt.toDomain();
-		Entidad objetivo = entidadService.toDomain(registroObjetivo);
-		int saludAntes = objetivo.getSalud();
-		int dano = tnt.explotar(objetivo);
-		registroTnt.registrarDetonacion(tnt);
-		registroObjetivo.setSalud(objetivo.getSalud());
-		return explosiones.save(new ExplosionEntity(tntId, objetivoId, saludAntes, objetivo.getSalud(), dano));
+		int saludAntes = registroObjetivo.getSalud();
+		int dano = reglas.calcularDano(registroTnt.getPosicion(),
+				new Vector(registroObjetivo.getX(), registroObjetivo.getY(), registroObjetivo.getZ()),
+				saludAntes, objetivoId, registroTnt.isDetonada());
+		registroTnt.setDetonada(true);
+		registroObjetivo.setSalud(saludAntes - dano);
+		return explosiones.save(new ExplosionEntity(tntId, objetivoId, saludAntes, registroObjetivo.getSalud(), dano));
 	}
 
 	@Transactional(readOnly = true)

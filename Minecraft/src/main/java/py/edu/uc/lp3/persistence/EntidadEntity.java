@@ -31,9 +31,7 @@ public abstract class EntidadEntity {
 
 	protected EntidadEntity(String id, String tipo, int salud, int saludMaxima,
 			double x, double y, double z, int experiencia, String profesion) {
-		if (id == null || id.isBlank() || saludMaxima <= 0 || salud < 0 || salud > saludMaxima || experiencia < 0
-				|| !Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(z))
-			throw new IllegalArgumentException("Datos de entidad invalidos");
+
 		this.id = id;
 		this.tipo = tipo;
 		this.salud = salud;
@@ -45,24 +43,10 @@ public abstract class EntidadEntity {
 		this.profesion = profesion;
 	}
 
-	public static EntidadEntity crear(String id, String tipo, int salud, int saludMaxima,
-			double x, double y, double z, int experiencia, String profesion) {
-		return switch (tipo) {
-			case "CERDO" -> new CerdoEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
-			case "JUGADOR" -> new JugadorEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
-			case "ESQUELETO" -> new EsqueletoEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
-			case "CREEPER" -> new CreeperEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
-			case "ALDEANO" -> new AldeanoEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
-			case "ZOMBIE" -> new ZombieEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
-			default -> throw new IllegalArgumentException("Tipo de entidad no soportado");
-		};
-	}
-
 	public String getId() { return id; }
 	public String getTipo() { return tipo; }
 	public int getSalud() { return salud; }
 	public void setSalud(int salud) {
-		if (salud < 0 || salud > saludMaxima) throw new IllegalArgumentException("Salud fuera de rango");
 		this.salud = salud;
 	}
 	public int getSaludMaxima() { return saludMaxima; }

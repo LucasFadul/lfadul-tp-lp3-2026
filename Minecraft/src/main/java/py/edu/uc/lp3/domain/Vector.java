@@ -20,7 +20,6 @@ public class Vector {
 	}
 
 	public void setX(double x) {
-		if (!Double.isFinite(x)) throw new IllegalArgumentException("La coordenada debe ser finita");
 		this.x = x;
 	}
 
@@ -29,7 +28,6 @@ public class Vector {
 	}
 
 	public void setY(double y) {
-		if (!Double.isFinite(y)) throw new IllegalArgumentException("La coordenada debe ser finita");
 		this.y = y;
 	}
 
@@ -38,7 +36,6 @@ public class Vector {
 	}
 
 	public void setZ(double z) {
-		if (!Double.isFinite(z)) throw new IllegalArgumentException("La coordenada debe ser finita");
 		this.z = z;
 	}
 
@@ -47,8 +44,4 @@ public class Vector {
 		return "(" + x + ", " + y + ", " + z + ")";
 	}
 
-	public double distanciaHasta(Vector otra) {
-		if (otra == null) throw new IllegalArgumentException("La posicion es obligatoria");
-		return Math.hypot(Math.hypot(x - otra.x, y - otra.y), z - otra.z);
-	}
 }

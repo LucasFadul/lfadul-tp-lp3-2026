@@ -22,6 +22,12 @@ import py.edu.uc.lp3.domain.exception.EntidadConflictException;
 import py.edu.uc.lp3.domain.exception.EntidadNotFoundException;
 import py.edu.uc.lp3.domain.exception.EntidadInvalidaException;
 import py.edu.uc.lp3.persistence.EntidadEntity;
+import py.edu.uc.lp3.persistence.CerdoEntity;
+import py.edu.uc.lp3.persistence.JugadorEntity;
+import py.edu.uc.lp3.persistence.EsqueletoEntity;
+import py.edu.uc.lp3.persistence.CreeperEntity;
+import py.edu.uc.lp3.persistence.AldeanoEntity;
+import py.edu.uc.lp3.persistence.ZombieEntity;
 import py.edu.uc.lp3.persistence.EntidadRepository;
 import py.edu.uc.lp3.rest.dto.EntidadRequest;
 import py.edu.uc.lp3.rest.dto.EntidadResponse;
@@ -30,9 +36,11 @@ import py.edu.uc.lp3.rest.dto.EntidadResponse;
 @Transactional
 public class EntidadService {
 	private final EntidadRepository repository;
+	private final ReglasExplosionService reglas;
 
-	public EntidadService(EntidadRepository repository) {
+	public EntidadService(EntidadRepository repository, ReglasExplosionService reglas) {
 		this.repository = repository;
+		this.reglas = reglas;
 	}
 
 	@Transactional(readOnly = true)
@@ -71,17 +79,29 @@ public class EntidadService {
 		repository.delete(existente);
 	}
 
+
+	/** Calcula la misma regla sin guardar cambios ni consumir TNT. */
+	@Transactional(readOnly = true)
+	public SimulacionExplosionResponse validarExplosion(String id, ExplosionRequest request) {
+		if (request == null || request.posicion() == null)
+			throw new EntidadInvalidaException("La posicion de la TNT es obligatoria");
+		EntidadEntity registro = buscar(id);
+		int saludAnterior = registro.getSalud();
+		int dano = reglas.calcularDano(request.posicion(), new Vector(registro.getX(), registro.getY(), registro.getZ()),
+				saludAnterior, id, false);
+		return new SimulacionExplosionResponse(id, saludAnterior, saludAnterior - dano, dano, Tnt.RADIO_EXPLOSION);
+	}
+
 	public SimulacionExplosionResponse simularExplosion(String id, ExplosionRequest request) {
 		if (request == null || request.posicion() == null)
 			throw new EntidadInvalidaException("La posicion de la TNT es obligatoria");
 		EntidadEntity registro = buscar(id);
-		Entidad objetivo = toDomain(registro);
-		int saludAnterior = objetivo.getSalud();
-		Tnt tnt = new Tnt(request.posicion());
-		int dano = tnt.explotar(objetivo);
-		registro.setSalud(objetivo.getSalud());
+		int saludAnterior = registro.getSalud();
+		int dano = reglas.calcularDano(request.posicion(), new Vector(registro.getX(), registro.getY(), registro.getZ()),
+				saludAnterior, id, false);
+		registro.setSalud(saludAnterior - dano);
 		repository.save(registro);
-		return new SimulacionExplosionResponse(id, saludAnterior, objetivo.getSalud(), dano, Tnt.RADIO_EXPLOSION);
+		return new SimulacionExplosionResponse(id, saludAnterior, registro.getSalud(), dano, Tnt.RADIO_EXPLOSION);
 	}
 
 	private EntidadEntity buscar(String id) {
@@ -101,6 +121,7 @@ public class EntidadService {
 			throw new EntidadInvalidaException("La salud debe estar entre 0 y la salud maxima");
 		if (request.getPosicion() == null)
 			throw new EntidadInvalidaException("La posicion es obligatoria");
+		reglas.validarPosicion(request.getPosicion());
 		if (request.getExperiencia() == null || request.getExperiencia() < 0)
 			throw new EntidadInvalidaException("La experiencia debe ser no negativa");
 		String tipo = tipoNormalizado(request.getTipo());
@@ -130,9 +151,18 @@ public class EntidadService {
 		int saludMaxima = request.getSaludMaxima();
 		int salud = request.getSalud() == null ? saludMaxima : request.getSalud();
 		Vector posicion = request.getPosicion();
-		return EntidadEntity.crear(id, tipo, salud, saludMaxima,
-				posicion.getX(), posicion.getY(), posicion.getZ(), request.getExperiencia(),
-				tipo.equals("ALDEANO") ? profesion(request.getProfesion()).name() : null);
+		double x = posicion.getX(), y = posicion.getY(), z = posicion.getZ();
+		int experiencia = request.getExperiencia();
+		String profesion = tipo.equals("ALDEANO") ? profesion(request.getProfesion()).name() : null;
+		return switch (tipo) {
+			case "CERDO" -> new CerdoEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
+			case "JUGADOR" -> new JugadorEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
+			case "ESQUELETO" -> new EsqueletoEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
+			case "CREEPER" -> new CreeperEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
+			case "ALDEANO" -> new AldeanoEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
+			case "ZOMBIE" -> new ZombieEntity(id, salud, saludMaxima, x, y, z, experiencia, profesion);
+			default -> throw new EntidadInvalidaException("Tipo de entidad no soportado");
+		};
 	}
 
 	private EntidadResponse toResponse(EntidadEntity entity) {

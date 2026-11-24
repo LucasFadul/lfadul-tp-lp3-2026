@@ -37,9 +37,6 @@ classDiagram
         -int saludMaxima
         +getComportamiento() String*
         +moverse() void
-        +recibirDano(int cantidad) void
-        +curar(int cantidad) void
-        +estaVivo() boolean
     }
 
     class Jugador {
@@ -62,7 +59,6 @@ classDiagram
 
     class Hostil {
         <<interface>>
-        +atacar(Entidad objetivo) void
     }
 
     class ComportamientoIA {
@@ -96,18 +92,14 @@ classDiagram
     class Esqueleto {
         +Esqueleto(String id)
         +Esqueleto(String id, int saludMaxima)
-        +atacar(Entidad objetivo) void
-        +atacar(Entidad objetivo, double distancia) void
         +getComportamiento() String
     }
 
     class Enderman {
-        +atacar(Entidad objetivo) void
         +getComportamiento() String
     }
 
     class zombie {
-        +atacar(Entidad objetivo) void
         +getComportamiento() String
     }
 
@@ -115,7 +107,6 @@ classDiagram
         -String imagen
         -String sonido
         -double velocidad
-        +atacar(Entidad objetivo) void
         +explotar() String
         +mostrarEnUI() String
         +getComportamiento() String
@@ -175,9 +166,11 @@ Java 21 o superior. El Maven Wrapper está en `Minecraft/`.
 Siguiendo el [template](https://github.com/alefq/lp3-template-tp/tree/main/src/main/java/py/edu/uc/lp3), bajo `Minecraft/src/main/java/py/edu/uc/lp3/`:
 
 - `Application.java`: arranque de Spring Boot y escaneo de subpaquetes.
-- `domain/`: todas las clases del modelo y sus reglas.
-- `rest/controller/`: controllers de inicio, jugadores y explosivos.
-- `rest/response/`: respuestas JSON específicas de los servicios REST.
+- `domain/`: clases del modelo; `domain/exception/`: excepciones del dominio.
+- `persistence/`: entidades JPA y repositorios.
+- `service/`: servicios de entidades, simulación y clientes HTTP.
+- `rest/controller/`: controladores REST y manejo de errores HTTP.
+- `rest/dto/` y `rest/response/`: solicitudes y respuestas JSON.
 
 ## Sobrecarga y sobreescritura
 
@@ -188,10 +181,10 @@ Las firmas delegan con `this` y la hija llama a `super(id, saludMaxima)`.
 `Esqueleto` y `Cerdo` tienen constructores con id solo (salud 20 y 10)
 y con id más salud. `Vector()` y `Vector(double, double, double)` se conservan.
 
-Además, `Esqueleto.atacar(Entidad)` delega en `atacar(Entidad, double)`:
-sin distancia se asume 0; con distancia hasta 16 bloques inflige 4 de daño,
-y fuera de alcance no hace daño. Una distancia negativa o no finita se rechaza.
-Son firmas distintas de la misma acción en la misma clase.
+Además, `ReglasCombateService.atacarConEsqueleto(Entidad)` delega en la
+sobrecarga que recibe distancia: sin distancia se asume 0; hasta 16 bloques
+inflige 4 de daño y fuera de alcance no hace daño. Una distancia negativa o no
+finita se rechaza en el servicio.
 
 **Sobreescritura:** `Entidad.getComportamiento()` es abstracto.
 `Esqueleto` y `Cerdo` implementan la misma firma con textos diferentes;
@@ -219,12 +212,11 @@ como `UICapable` y devuelve sus propiedades y mensajes en JSON.
 
 ## Reglas y errores HTTP
 
-El constructor valida id no vacío, salud máxima positiva, experiencia no negativa
-y coordenadas finitas. El controller construye una instancia nueva con los valores
-URL; no asigna vida a mano. El dominio rechaza valores inválidos y el controller
-responde HTTP 400 con `{"error":"..."}`. Un número con formato incorrecto también
-recibe HTTP 400 por Spring. La salud se mantiene entre 0 y su máximo; daño y
-curación negativos se rechazan, y una curación grande no desborda.
+`ReglasCombateService` valida id no vacío, salud máxima positiva, experiencia
+no negativa y coordenadas finitas antes de construir el jugador para `GET /jugador`.
+Las entradas inválidas responden HTTP 400 con `{"error":"..."}`; un número con
+formato incorrecto también recibe HTTP 400 por Spring. Los servicios rechazan daño
+y curación negativos y limitan la salud entre 0 y su máximo.
 
 ```bash
 curl http://localhost:8080/
@@ -237,14 +229,14 @@ curl -i 'http://localhost:8080/jugador?saludMaxima=0'
 
 El último pedido debe responder 400. Las pruebas verifican construcción, JSON,
 polimorfismo, errores del dominio, alcance del ataque y encapsulamiento.
-Las especificaciones de entrega están en [docs/ESPECIFICACIONES.md](docs/ESPECIFICACIONES.md).
+Las especificaciones de entrega están en [docs/ESPECIFICACIONES-POO08.md](docs/ESPECIFICACIONES-POO08.md).
 La asistencia de IA se registra en [BITACORA.md](BITACORA.md).
 
 ## Simulación REST de explosiones
 
 Regla de negocio: una TNT causa 8 puntos de daño a una entidad viva a una distancia de hasta 4 bloques, sin reducir la salud por debajo de cero; fuera del radio no causa daño.
 
-Participan tres clases del modelo: `Tnt` aplica la explosión, `Vector` calcula la distancia en tres dimensiones y `Entidad` recibe el daño.
+`ReglasExplosionService` aplica la regla de daño y calcula la distancia en tres dimensiones con los datos de `Vector` y la entidad persistida conserva la salud resultante.
 El controlador delega en `EntidadService`, que recupera el objetivo y guarda la salud resultante mediante Spring Data JPA en H2.
 
 Crear un objetivo y simular la explosión:
@@ -271,16 +263,18 @@ Las excepciones del dominio están en `domain.exception` y forman esta jerarquí
 ```text
 RuntimeException
 └── MinecraftException (abstracta)
-    └── EntidadException (abstracta)
-        ├── EntidadInvalidaException
-        ├── EntidadNotFoundException
-        ├── EntidadConflictException
-        └── EntidadSinVidaException
+    ├── EntidadException (abstracta)
+    │   ├── EntidadInvalidaException
+    │   ├── EntidadNotFoundException
+    │   ├── EntidadConflictException
+    │   └── EntidadSinVidaException
+    ├── TntDetonadaException
+    └── TntNotFoundException
 ```
 
 `MinecraftException` agrupa los errores del juego y `EntidadException` los relacionados con sus criaturas y jugadores.
 El servicio lanza `EntidadInvalidaException` ante datos inválidos (HTTP 400), `EntidadNotFoundException` cuando el objetivo no existe (404) y `EntidadConflictException` cuando el ID ya está registrado (409).
-La clase `Tnt` lanza `EntidadSinVidaException` si el objetivo está muerto (409), por lo que la regla se cumple también al usar el modelo sin REST.
+`ReglasExplosionService` lanza `EntidadSinVidaException` si el objetivo está muerto y `TntDetonadaException` si la TNT ya fue detonada; ambas se traducen a HTTP 409.
 Cada tipo concreto tiene su propio método `@ExceptionHandler` en `ApiExceptionHandler`, que responde con `{"error":"mensaje"}`.
 
 
@@ -310,7 +304,7 @@ En H2 Console, el JDBC URL es `jdbc:h2:file:/ruta/absoluta/al/home/.lp3-minecraf
 
 **Regla 2:** una `Tnt` se consume al detonar, incluso si el objetivo está fuera del radio, y no puede volver a usarse.
 
-En `POST /api/explosiones`, `Tnt`, `Entidad` y `Vector` colaboran: la TNT comprueba ambas reglas, la distancia se calcula en tres dimensiones y la entidad recibe el daño. La transacción persiste la salud, el estado de la TNT y el registro de la explosión; si se rechaza una operación no se consume la TNT ni se guarda una explosión.
+En `POST /api/explosiones`, `ReglasExplosionService` comprueba ambas reglas, calcula la distancia en tres dimensiones y determina el daño. La transacción persiste la salud, el estado de la TNT y el registro de la explosión; si se rechaza una operación no se consume la TNT ni se guarda una explosión.
 
 ```mermaid
 classDiagram
@@ -325,11 +319,9 @@ classDiagram
     class Cerdo
     class Jugador
     class Tnt {
-        +explotar(Entidad) int
     }
-    class Vector {
-        +distanciaHasta(Vector) double
-    }
+    class Vector
+    class ReglasExplosionService
     class Explosivo {
         <<interface>>
         +explotar() String
@@ -365,7 +357,7 @@ classDiagram
     Explosivo <|.. Tnt
     Explosivo <|.. Creeper
     Tnt --> Vector : posición
-    Tnt --> Entidad : daña
+    ExplosionService --> ReglasExplosionService : aplica reglas
     EntidadEntity <|-- CerdoEntity
     EntidadEntity <|-- JugadorEntity
     EntidadController --> EntidadService
@@ -386,10 +378,10 @@ classDiagram
 - **Herencia y tablas:** `EntidadEntity` es la base JPA y las hijas usan `SINGLE_TABLE`, con un discriminador `tipo`; el JSON también lleva `tipo` para elegir y reconocer el subtipo. La tabla única evita joins entre tablas de la misma familia y conserva los tipos ya existentes.
 - **Interfaz y repositorio:** `EntidadController` depende de `EntidadService`, que usa la interfaz Spring Data `EntidadRepository`; Spring implementa la persistencia, como el protocolo `Explosivo` permite usar distintas implementaciones sin depender de una clase concreta.
 - **Protocolo del dominio:** `GET /explosivos` invoca `Explosivo.explotar()` sobre `Creeper` y `Tnt`, de las familias `Entidad` y `Bloque`.
-- **Ocultamiento:** `Tnt`, `Entidad` y `Vector` comprueban alcance, daño, vida y coordenadas; los constructores JPA sin argumentos son protegidos, y la entidad persistida valida su salud. Los pedidos 08 y 09 de Insomnia muestran que un POST con salud máxima 0 no crea una entidad.
+- **Ocultamiento:** `ReglasExplosionService` valida alcance, daño y posición para la explosión; `EntidadService` valida la salud antes de persistirla. Los constructores JPA sin argumentos son protegidos. Las validaciones y reglas de salud y combate se trasladaron a servicios. Los pedidos 08 y 09 de Insomnia muestran que un POST con salud máxima 0 no crea una entidad.
 - **PUT y PATCH:** se usa `PUT`, que reemplaza los datos editables; `id`, `tipo` y `saludMaxima` son obligatorios y el tipo no puede cambiar. Si se omiten, `salud` vuelve a la máxima, `posicion` a `(0,0,0)`, `experiencia` a 0 y la profesión de aldeano a `SIN_PROFESION`; no se implementa PATCH.
 - **DELETE:** borra físicamente la entidad de la tabla y responde 204; los registros históricos de explosiones conservan los IDs que registraron.
-- **Dos reglas y persistencia:** daño por distancia y consumo de TNT son acciones del dominio; el recurso `/api/explosiones` registra la simulación y los GET posteriores de la entidad y la TNT muestran ambos estados guardados.
+- **Dos reglas y persistencia:** los servicios aplican daño por distancia y consumo de TNT; el recurso `/api/explosiones` registra la simulación y los GET posteriores de la entidad y la TNT muestran ambos estados guardados.
 - **Excepciones:** `MinecraftException` y `EntidadException` son bases; hay tipos para datos inválidos, inexistencia, conflicto, entidad sin vida, TNT inexistente y TNT detonada. Son no comprobadas (`RuntimeException`) porque describen errores de dominio que el servicio deja propagar al handler; cada tipo concreto tiene su handler y el JSON lleva `error`.
 
 ### Colección de Insomnia
@@ -408,3 +400,75 @@ Importar `insomnia/minecraft-poo08.json` mediante **Import → File** en Insomni
 
 Este commit contiene código, pruebas y especificaciones. El commit posterior
 únicamente incorpora este enlace de entrega.
+
+### Consulta de objetos externos
+
+El endpoint `GET /api/objetos-externos` consulta con Spring WebClient el listado de `https://api.restful-api.dev/objects`. El campo `data` puede contener distintos atributos o ser `null`. Para cambiar el servidor de origen, configure `api.objetos.base-url` en `Minecraft/src/main/resources/application.properties`.
+
+```bash
+curl http://localhost:8080/api/objetos-externos
+```
+
+### Documentación de la API
+
+Con la aplicación iniciada, Swagger UI está disponible en [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html). Permite explorar y probar los servicios REST. El contrato OpenAPI también está disponible en [JSON](http://localhost:8080/v3/api-docs) y [YAML](http://localhost:8080/v3/api-docs.yaml).
+
+### Integración con la API del compañero
+
+`GET /api/integracion/esqueletos/{esqueletoId}/jugadores/{jugadorId}/disparo` compara un ataque simulado entre dos entidades locales persistidas con la acción que devuelve la API del compañero. Acepta los parámetros opcionales `danoBase` (4), `velocidad` (1) y `usaArco` (true), usados únicamente en la consulta externa. La distancia entre posiciones locales se redondea hacia arriba para enviarla como número entero a esa API. El daño local utiliza la regla propia del proyecto; la acción externa se informa por separado. La simulación no modifica las entidades.
+
+La dirección del compañero se configura con `api.companero.base-url` en `application.properties`. Su servidor debe estar disponible desde la aplicación para que la consulta funcione. El endpoint también está disponible en Swagger UI, en **Integración con compañero**.
+
+### POO-09: grupo y trabajo pendiente
+
+- A1: Lucas Fadul, [lfadul-tp-lp3-2026](https://github.com/LucasFadul/lfadul-tp-lp3-2026); OpenAPI local: `http://localhost:8080/v3/api-docs`.
+- A2: MatRF04, [mr-taller-git-2026](https://github.com/MatRF04/mr-taller-git-2026), commit consultado `727c53064c081ecfad8fdc4cc597d14a485150ab`. Esa copia local no publicó `/v3/api-docs` (404); el servicio visto por Hamachi sí publicó OpenAPI el 23/11/2026 en `http://25.28.15.25:8080/v3/api-docs`. Falta confirmar su commit.
+- A3: SaDez7, [sb-taller-git-2026](https://github.com/SaDez7/sb-taller-git-2026), commit consultado `1853e5226ce5aea60574fa0ebb4d8f8bbfb33aae`. OpenAPI local en `http://localhost:8082/v3/api-docs`. Su regla de explosión reduce el daño con la distancia y destruye bloques alcanzados; ver [sus reglas](https://github.com/SaDez7/sb-taller-git-2026#las-dos-reglas-de-negocio).
+
+Se prepararon clientes de solo lectura para `GET /entidades/creepers/listos` de A2 y `GET /entidades/vivos` de A3. Sus URLs se configuran con `API_A2_BASE_URL` y `API_A3_BASE_URL`, o con `api.a2.base-url` y `api.a3.base-url`. La consulta de A2 es provisional: la ruta y la regla aparecen en el OpenAPI observado en clase y en el README del commit consultado, pero ese commit no publicó OpenAPI al ejecutarlo. `POST /api/jugadas` usa estas listas como verificaciones previas y guarda una explosión y una jugada locales si ambos participantes aparecen. La ausencia se interpreta en A1 como un rechazo atribuido a la lista de A2 o A3: las APIs devuelven listas HTTP 200 y no un rechazo explícito. Falta confirmar con la cátedra o compañeros si estas verificaciones satisfacen las reglas de explosión exigidas; no se pretende que las simulaciones remotas de explosión se hayan ejecutado.
+
+La colección `insomnia/minecraft-poo09.json` incluye preparación local, consultas, ausencia en A2, ausencia en A3, caso feliz y consulta de jugada. Las variables de ids deben ajustarse a las entidades disponibles. Las dos ausencias reales se comprobaron por Hamachi y el caso feliz se observó con ambas APIs reales el 23/11/2026 (HTTP 201, jugada 1 y explosión 5). Para repetirlo hacen falta IDs presentes y una TNT local sin detonar.
+
+### Estado de la corrección POO-08 (21/24)
+
+- **Base H2 en Git:** se dejó de seguir `Minecraft/data/minecraftdb.mv.db` sin borrar la copia local y se excluyeron `*.mv.db` y `*.trace.db` con `.gitignore`. La eliminación del índice y los cambios aún deben incluirse en el commit de entrega.
+- **Capas y validaciones:** se retiraron excepciones de las entidades del dominio y persistencia. `ReglasCombateService` valida el jugador y aplica salud/combate; `ReglasExplosionService` valida coordenadas y calcula daño de TNT; `EntidadService` valida el CRUD y `ExplosionService` coordina la transacción. Los mensajes de comportamiento y capacidades de ejemplos anteriores permanecen en el modelo para conservar su demostración de interfaces y polimorfismo.
+- **Documentación:** se actualizaron paquetes, enlace de especificaciones y jerarquía de excepciones; los ejemplos de combate ahora apuntan al servicio.
+
+### Arranque local para POO-09
+
+Usar copias independientes y versiones confirmadas de los dos repositorios. La revisión actual usó los commits indicados arriba; deben actualizarse cuando los compañeros confirmen sus versiones de entrega. En terminales separadas:
+
+```bash
+# Desde la raíz de cada copia:
+# A1 - este repositorio
+./mvnw spring-boot:run
+
+# A2 - copia de MatRF04
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+
+# A3 - copia de SaDez7
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8082"
+```
+
+A1 usa por defecto `http://localhost:8081` para A2 y `http://localhost:8082` para A3. Una aplicación por puerto; cada copia mantiene su propia base. La colección consulta los OpenAPI, las listas y el endpoint de jugadas. A2 y A3 devuelven listas; A1 interpreta la ausencia como rechazo atribuido. Debe confirmarse la adecuación de estas reglas al enunciado y comprobar el caso feliz con las dos APIs reales.
+
+### Jugada cruzada provisional
+
+`POST /api/jugadas` recibe `creeperA2` (id numérico en A2), `jugadorA3` (id en A3), `tntId` y `objetivoId` (ambos en A1). Consulta primero `GET /entidades/creepers/listos` de A2; si el id no aparece, A1 devuelve 422 con `origen: A2`. Luego consulta `GET /entidades/vivos` de A3; si el jugador no aparece, A1 devuelve 422 con `origen: A3`. El orden evita consultar A3 si falla la primera comprobación. Una falla de conexión devuelve 502.
+
+Si ambas listas contienen los participantes, una transacción local ejecuta la simulación de TNT y guarda `jugadas_cruzadas` con el id de la explosión. `GET /api/jugadas/{id}` consulta el registro y `GET /api/explosiones/{explosionId}` muestra el resultado. Los identificadores externos y locales son independientes: la operación no sincroniza entidades entre las bases. Los servicios de compañeros solo se consultan con GET.
+
+Para repetir: crear en A1 un objetivo y una TNT, elegir ids de las listas reales y ejecutar los pedidos 05 a 08 de Insomnia. Las simulaciones remotas de explosión **no** se invocan; la aceptación o rechazo es inferencia de A1 a partir de las listas. La cátedra debe confirmar si esto cumple el requisito de validación de reglas de explosión y rechazo explícito.
+
+### Validación de explosión sin cambios
+
+`POST /api/entidades/{id}/explosiones/validar` recibe el mismo cuerpo de posición que la simulación sobre entidad. Calcula el daño de TNT de Lucas (radio 4, hasta 8 de daño), pero no cambia la salud ni guarda una explosión ni consume una TNT. Responde 200 con `saludAnterior`, `saludActual` simulada y `danoAplicado`; 400 si falta o es inválida la posición, 404 si no existe la entidad y 409 si no tiene vida. La operación valida una explosión hipotética: no verifica ni consume una TNT persistida.
+
+```json
+{ "posicion": { "x": 0, "y": 0, "z": 0 } }
+```
+
+### Guía para coordinar y probar
+
+Ver [docs/GUIA-COORDINACION-POO09.md](docs/GUIA-COORDINACION-POO09.md) para preparar objetivos en cada proyecto, entender qué bases cambian y ejecutar las pruebas del escenario provisional.

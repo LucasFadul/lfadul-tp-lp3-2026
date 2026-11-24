@@ -299,3 +299,47 @@ Se integró el historial remoto antes del push. La interfaz AtacaJugador de una 
 - Se consultaron el enunciado POO-08 y la rúbrica enlazados por el estudiante. No se delegó el trabajo a otros agentes ni se colaboró sobre el repositorio de otro estudiante.
 - Se amplió la persistencia JPA polimórfica y la simulación transaccional con TNT consumible y registro de explosiones; se documentaron las reglas, el arranque y las decisiones del dominio.
 - Verificación: `./mvnw -q test -Dspring.datasource.url=jdbc:h2:mem:fullverify -Dspring.jpa.hibernate.ddl-auto=create-drop`: 22 pruebas sin fallos. Se inició el servidor desde la raíz con una base temporal, se recorrieron por HTTP las 24 solicitudes de la colección y se comprobó la persistencia de entidad, TNT y explosión tras reiniciar. El archivo JSON se validó sintácticamente; la importación en la interfaz de Insomnia no se automatizó.
+
+## POO-09 — inicio, 22 de noviembre de 2026
+
+- Solicitud: comenzar la entrega, cerrar observaciones de POO-08 e integrar APIs de MatRF04 y SaDez7, con el grupo confirmado por Lucas.
+- Asistencia: OpenAI Codex. Se consultaron los README y OpenAPI disponibles y se clonaron copias temporales, sin copiar código de dominio ajeno.
+- Se probaron con H2 en memoria: MatRF04 en el commit `727c53064c081ecfad8fdc4cc597d14a485150ab` arrancó pero `/v3/api-docs` respondió 404; SaDez7 en `1853e5226ce5aea60574fa0ebb4d8f8bbfb33aae` arrancó y publicó `/v3/api-docs`.
+- Se dejó de versionar la base H2 generada conservando el archivo local, se agregaron patrones al `.gitignore` y se corrigieron tres secciones desactualizadas del README. Queda pendiente mover reglas y validaciones a servicios y completar el escenario POO-09.
+
+### Avance posterior
+
+- Se trasladó el cálculo y las excepciones de la simulación de TNT a `ReglasExplosionService`, manteniendo el resultado persistido y los errores HTTP; las pruebas pasan. Aún quedan validaciones y lógica en otras clases de dominio y persistencia señaladas por la corrección.
+- Se agregó un cliente de solo lectura para `/entidades/vivos` de SaDez7, con URL configurable y pruebas simuladas; todavía no valida el escenario definitivo ni persiste jugadas POO-09.
+- Se documentaron roles y commits consultados, se preparó una colección Insomnia preliminar y se describieron las reglas de TNT en OpenAPI. Pendientes los tres casos del escenario y la validación de A2.
+- Se trasladó la selección del subtipo JPA a `EntidadService` y se retiraron validaciones de las entidades JPA; se verificaron las pruebas de la aplicación.
+
+### Correcciones y consultas de preparación
+
+- Se trasladaron validaciones de jugador, posición y combate al servicio; se retiraron excepciones y reglas mutables de los modelos implicados. Los ejemplos de textos e interfaces de ejercicios anteriores siguen en el dominio. Se adaptaron las pruebas para validar las reglas en la capa de servicios y las rutas HTTP.
+- Se agregó `Matrf04Client` para la consulta de solo lectura de creepers listos, con URL configurable y pruebas simuladas; no constituye el escenario ni resuelve la ausencia del OpenAPI del último commit consultado.
+- Se ejecutaron copias locales de los dos servicios con H2 en memoria, se creó una entidad de prueba en cada copia y se verificaron las respuestas HTTP 200 de las rutas de lectura. Ambas copias se detuvieron después; no se accedió a las bases de los compañeros.
+- Se actualizó el README, se ampliaron las consultas preliminares de Insomnia y se creó un borrador de especificaciones POO-09. Siguen pendientes el contrato definitivo de A2 y el escenario validado por ambos compañeros.
+- Verificación posterior: 32 pruebas automatizadas aprobadas con base H2 de prueba; ejecución real de A1 en el puerto 18080 con H2 en memoria: OpenAPI 200, creación de entidad y TNT 201, explosión 201 (salud 20 a 12), segunda detonación 409 y salud sin cambios. El servidor temporal se detuvo.
+- Se actualizó la guía de estudio en `output/pdf/` para reflejar la ubicación actual de las reglas y el estado incompleto del challenge.
+
+## POO-09 — pruebas por Hamachi, 23 de noviembre de 2026
+
+- A2 publicó OpenAPI accesible en `http://25.28.15.25:8080/v3/api-docs`; A3 lo publicó en `http://25.29.140.0:8080/v3/api-docs`. Las direcciones se pasaron por el usuario y se consultaron sin cambiar datos remotos.
+- Se implementó `POST /api/jugadas`: A2 lista creepers listos y A3 entidades vivas; si el participante no figura, A1 genera un 422 que identifica la lista. Ambos GET son de solo lectura. Si aparecen, una transacción local simula y guarda la explosión y la jugada; un GET permite consultarla. Las APIs externas no generan un rechazo explícito: lo infiere A1.
+- Se agregaron los casos a Insomnia y pruebas con servicios simulados: éxito, ausencia en A2, ausencia en A3 y fallo de conexión de A2. Las 36 pruebas del proyecto pasaron.
+- Se iniciaron los servicios de A1 con H2 en memoria y se comprobó por Hamachi que la ausencia en A2 y A3 devuelve el origen y deja sin cambios la salud y TNT local. No se crearon ni modificaron datos de los compañeros. A3 no tenía jugadores vivos durante la consulta, por lo cual el éxito real de extremo a extremo quedó pendiente.
+- Pendiente confirmar que la cátedra acepta la inferencia desde listas como validación de reglas del challenge; las simulaciones de explosión de los compañeros no se invocan. También faltan el commit de A2 que publica OpenAPI, confirmación de commits definitivos y el enlace al commit final propio.
+
+## POO-09 — validación previa sin efectos
+
+- Se revisaron los OpenAPI actuales por Hamachi. Mateo tiene una simulación GET que consulta al jugador en SaDez7 y devuelve el daño; SaDez7 publica validación de jugador por GET y simulación de explosión por POST que actúa sobre sus entidades. Esas operaciones, tal como están documentadas, todavía no establecen dos validaciones independientes explícitas de la misma explosión.
+- Se agregó `POST /api/entidades/{id}/explosiones/validar`: calcula la regla local sin modificar datos, con 200, 400, 404 y 409 documentados. Se agregaron pruebas de éxito y rechazos que comprueban el estado local. Esta operación no comprueba una TNT persistida.
+- La jugada que consulta listas sigue siendo provisional; falta acordar con los compañeros los contratos para validar una misma explosión y completar esa integración.
+
+## POO-09 - documentación de coordinación
+
+- Solicitud: documentar cómo preparar y probar objetivos en las bases de los tres integrantes.
+- Se agregó `docs/GUIA-COORDINACION-POO09.md` con contratos, efectos en cada base, pasos de prueba y limitaciones del escenario provisional. Se actualizó el README y el borrador de especificaciones con la evidencia del caso feliz observado por el usuario (HTTP 201, jugada 1, explosión 5).
+- No se crearon ni modificaron entidades remotas en este trabajo de documentación. La implementación definitiva, la validación de reglas de los compañeros y los commits finales continúan pendientes.
+- Se actualizaron los dos PDF de estudio y presentación para indicar la prueba real exitosa y documentar la validación de explosión sin cambios; se renderizaron y revisaron visualmente.

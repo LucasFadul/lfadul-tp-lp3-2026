@@ -8,7 +8,6 @@ public abstract class Entidad {
 
 	public Entidad(String id, int saludMaxima) {
 		setId(id);
-		if (saludMaxima <= 0) throw new IllegalArgumentException("La salud maxima debe ser positiva");
 		this.saludMaxima = saludMaxima;
 		this.salud = this.saludMaxima;
 		this.posicion = new Vector();
@@ -20,26 +19,11 @@ public abstract class Entidad {
 		System.out.println(getId() + " se mueve.");
 	}
 
-	public void recibirDano(int cantidad) {
-		if (cantidad < 0) throw new IllegalArgumentException("El dano no puede ser negativo");
-		this.salud = Math.max(0, this.salud - cantidad);
-	}
-
-	public void curar(int cantidad) {
-		if (cantidad < 0) throw new IllegalArgumentException("La curacion no puede ser negativa");
-		this.salud = (int) Math.min(getSaludMaxima(), (long) this.salud + cantidad);
-	}
-
-	public boolean estaVivo() {
-		return salud > 0;
-	}
-
 	public String getId() {
 		return id;
 	}
 
 	public void setId(String id) {
-		if (id == null || id.isBlank()) throw new IllegalArgumentException("El id no puede estar vacio");
 		this.id = id;
 	}
 
@@ -48,7 +32,6 @@ public abstract class Entidad {
 	}
 
 	public void setPosicion(Vector posicion) {
-		if (posicion == null) throw new IllegalArgumentException("La posicion es obligatoria");
 		this.posicion = posicion;
 	}
 
@@ -57,7 +40,7 @@ public abstract class Entidad {
 	}
 
 	public void setSalud(int salud) {
-		this.salud = Math.max(0, Math.min(saludMaxima, salud));
+		this.salud = salud;
 	}
 
 	public int getSaludMaxima() {
@@ -65,8 +48,6 @@ public abstract class Entidad {
 	}
 
 	public void setSaludMaxima(int saludMaxima) {
-		if (saludMaxima <= 0) throw new IllegalArgumentException("La salud maxima debe ser positiva");
 		this.saludMaxima = saludMaxima;
-		this.salud = Math.min(this.salud, this.saludMaxima);
 	}
 }

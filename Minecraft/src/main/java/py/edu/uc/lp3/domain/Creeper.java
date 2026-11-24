@@ -13,12 +13,6 @@ public class Creeper extends Mob implements Hostil, Explosivo, UICapable {
 	}
 
 	@Override
-	public void atacar(Entidad objetivo) {
-		System.out.println(getId() + " explota junto a " + objetivo.getId());
-		objetivo.recibirDano(20);
-	}
-
-	@Override
 	public String explotar() {
 		return "El creeper se acerca en silencio y explota";
 	}
