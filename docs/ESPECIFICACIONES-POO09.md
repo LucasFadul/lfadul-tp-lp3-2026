@@ -10,4 +10,4 @@
 
 Mateo simula el daño sin escribir en su base; Santiago aplica el daño y puede destruir un bloque en su base. Si cualquiera rechaza, la base de Lucas queda igual. Una falla posterior a la aceptación de Santiago puede dejar cambios remotos sin registro local, pues las bases no comparten una transacción.
 
-Para Classroom, agregar el enlace exacto al commit de entrega en una copia de este documento. No es posible incluir el hash de un commit dentro del propio commit sin modificar su hash.
+Para Classroom, utilizar el archivo `ENTREGA-CLASSROOM-POO09.md`, que contiene el enlace al commit de la solución.

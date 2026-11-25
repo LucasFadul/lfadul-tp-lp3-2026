@@ -300,6 +300,8 @@ Se integró el historial remoto antes del push. La interfaz AtacaJugador de una 
 - Se amplió la persistencia JPA polimórfica y la simulación transaccional con TNT consumible y registro de explosiones; se documentaron las reglas, el arranque y las decisiones del dominio.
 - Verificación: `./mvnw -q test -Dspring.datasource.url=jdbc:h2:mem:fullverify -Dspring.jpa.hibernate.ddl-auto=create-drop`: 22 pruebas sin fallos. Se inició el servidor desde la raíz con una base temporal, se recorrieron por HTTP las 24 solicitudes de la colección y se comprobó la persistencia de entidad, TNT y explosión tras reiniciar. El archivo JSON se validó sintácticamente; la importación en la interfaz de Insomnia no se automatizó.
 
+Las entradas siguientes conservan el estado conocido en cada fecha. Las tareas que figuran como pendientes en una entrada histórica pueden haberse realizado en una entrada posterior.
+
 ## POO-09 — inicio, 22 de noviembre de 2026
 
 - Solicitud: comenzar la entrega, cerrar observaciones de POO-08 e integrar APIs de MatRF04 y SaDez7, con el grupo confirmado por Lucas.
@@ -355,3 +357,8 @@ Se integró el historial remoto antes del push. La interfaz AtacaJugador de una 
 - Solicitud: ejecutar las reglas de Mateo y Santiago en la misma jugada. Se consultaron sus contratos y se añadió la llamada real `POST /simulacion/explosiones` de Santiago después de la simulación de Mateo. Santiago aplica daño y puede destruir un bloque en su base; Mateo calcula daño sin escribir.
 - Se añadió validación previa de la TNT y objetivo locales, y persistencia del resultado de A3. Se documentó que las operaciones de A1 y A3 no son una transacción distribuida y que un timeout puede dejar resultado incierto.
 - Se ejecutaron 48 pruebas automatizadas sin fallos y un ensayo HTTP con las tres versiones y H2 temporal: ambos rechazos conservaron A1; el caso feliz guardó daño de Mateo 10, daño de Santiago 12 y bloque destruido. Las bases reales de los compañeros no se tocaron.
+
+## POO-09 — revisión final de documentación, 25 de noviembre de 2026
+
+- Solicitud: verificar la documentación y hacer push. Se contrastaron los documentos de entrega, README, colección y rutas con la implementación y la evidencia HTTP guardada. Se corrigió un método inexistente en el diagrama, se precisaron la consulta del creeper y el uso del bloque en Insomnia, y se agregó un ejemplo de solicitud.
+- La revisión de enlaces locales no encontró archivos ausentes. Las pruebas automatizadas y la prueba HTTP del escenario completo corresponden a la ejecución anterior, descrita en la entrada de reglas de ambos compañeros.

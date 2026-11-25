@@ -32,7 +32,7 @@ Anotar el `id` numérico. En Swagger de Santiago crear dos entidades con `POST /
 {"tipo":"jugador","id":"steve-prueba","salud":20,"saludMaxima":20,"experiencia":0,"x":2,"y":0,"z":0}
 ```
 
-Opcionalmente crear con `POST /bloques` un bloque de prueba y anotar su ID:
+Para recorrer los tres casos de la colección, crear con `POST /bloques` un bloque de prueba y anotar su ID (en una invocación directa a la API el bloque es opcional):
 
 ```json
 {"tipo":"tierra","x":1,"y":0,"z":0}
@@ -42,7 +42,7 @@ La explosión puede dañar ese jugador y destruir ese bloque en la base de Santi
 
 ## 3. Ejecutar los tres casos
 
-Importar `insomnia/minecraft-poo09.json` y ajustar URLs, IDs y radio. Ejecutar 05 con creeper inexistente (422 A2) y 06 con un bloque inexistente (Santiago responde 404; A1 traduce a 422 A3). Verificar con 03 y 04 que el objetivo y TNT de Lucas no cambiaron. Después ejecutar 07 con el bloque real y consultar la jugada mediante 08.
+Importar `insomnia/minecraft-poo09.json` y ajustar URLs, IDs y radio en el entorno. `creeper_a2` y `bloque_a3` deben ser los IDs numéricos devueltos al crearlos; `jugador_a3` y `creeper_a3` son los IDs de Santiago. Ejecutar 05 con creeper inexistente (422 A2) y 06 con un bloque inexistente (Santiago responde 404; A1 traduce a 422 A3). Verificar con 03 y 04 que el objetivo y TNT de Lucas no cambiaron. Después ejecutar 07 con el bloque real y consultar la jugada mediante 08.
 
 Con el ejemplo, Mateo simula 10 puntos de daño sin escribir su base; Santiago aplica 12 de daño al jugador y destruye el bloque en su base; Lucas aplica 8 al cerdo y consume su TNT. Para repetir el éxito usar otro jugador con salud completa, otro bloque y otra TNT. Si se pierde la conexión después de llamar a Santiago, revisar sus datos antes de reintentar: su cambio podría haber quedado guardado sin registro en Lucas.
 

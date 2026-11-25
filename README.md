@@ -168,7 +168,8 @@ Siguiendo el [template](https://github.com/alefq/lp3-template-tp/tree/main/src/m
 - `Application.java`: arranque de Spring Boot y escaneo de subpaquetes.
 - `domain/`: clases del modelo; `domain/exception/`: excepciones del dominio.
 - `persistence/`: entidades JPA y repositorios.
-- `service/`: servicios de entidades, simulación y clientes HTTP.
+- `service/`: servicios y reglas de entidades, explosiones y jugadas.
+- `client/`: clientes HTTP WebClient para los servicios de los compañeros.
 - `rest/controller/`: controladores REST y manejo de errores HTTP.
 - `rest/dto/` y `rest/response/`: solicitudes y respuestas JSON.
 
@@ -298,7 +299,7 @@ Las propiedades están en `Minecraft/src/main/resources/application.properties`:
 - `spring.jpa.open-in-view=false` cierra la sesión de persistencia al salir de la transacción de servicio.
 - `spring.h2.console.enabled=true` habilita la consola web de H2 para desarrollo.
 
-En H2 Console, el JDBC URL es `jdbc:h2:file:/ruta/absoluta/al/home/.lp3-minecraft/minecraftdb`, el usuario es `sa` y la contraseña está vacía. Las tablas `ENTIDADES`, `TNTS` y `EXPLOSIONES` se pueden consultar con `SELECT * FROM ENTIDADES;` y consultas equivalentes. El archivo H2 incluido previamente en `Minecraft/data/` es una copia anterior; la aplicación usa la ruta configurada en `application.properties`.
+En H2 Console, el JDBC URL es `jdbc:h2:file:/ruta/absoluta/al/home/.lp3-minecraft/minecraftdb`, el usuario es `sa` y la contraseña está vacía. Las tablas `ENTIDADES`, `TNTS` y `EXPLOSIONES` se pueden consultar con `SELECT * FROM ENTIDADES;` y consultas equivalentes. El archivo H2 que se versionó en POO-08 se retiró del repositorio; la aplicación usa la ruta configurada en `application.properties`.
 
 **Regla 1:** una `Tnt` causa 8 de daño a una `Entidad` viva situada a 4 bloques o menos y la salud nunca baja de cero.
 
@@ -311,7 +312,6 @@ classDiagram
     class Entidad {
         <<abstract>>
         +getComportamiento() String
-        +recibirDano(int)
     }
     class Mob
     class Pacifico
@@ -435,7 +435,7 @@ Una explosión en el origen involucra un creeper de Mateo, un jugador y un creep
 
 1. A1 comprueba que su TNT y objetivo permitan una explosión. Busca el creeper en `GET /entidades/creepers/listos` de Mateo y el jugador en `GET /entidades/vivos` de Santiago. A1 atribuye las ausencias a A2 o A3 desde listas HTTP 200; estas ausencias no son un rechazo explícito remoto.
 2. A1 consulta `GET /jugador` y `GET /entidades/{id}` de Santiago. El jugador debe tener salud completa: la simulación de Mateo construye un jugador temporal con salud máxima y no admite otra salud actual.
-3. A1 llama `GET /simulaciones/creeper/jugador` de Mateo con la salud máxima y posición de Santiago. Mateo aplica su regla de hasta 10 de daño dentro de tres bloques; es una **simulación sin modificar** su base.
+3. A1 llama `GET /simulaciones/creeper/jugador` de Mateo con la salud máxima y posición de Santiago. Mateo aplica su regla de hasta 10 de daño dentro de tres bloques; es una **simulación sin modificar** su base. Esa operación calcula el daño de un creeper genérico en el origen: el ID concreto de Mateo se verifica en la lista del paso 1, pero no se envía a esta simulación.
 4. A1 llama `POST /simulacion/explosiones` de Santiago con el creeper, jugador, radio y bloque opcional. Santiago aplica su regla de daño decreciente y, si hay bloque, su regla de destrucción. **Esta llamada modifica la salud del jugador y puede destruir el bloque en la base de Santiago.** Un 4xx remoto se traduce a 422 con origen A3.
 5. Solo si Santiago acepta, A1 ejecuta su explosión local y guarda la jugada, el daño simulado por Mateo, el daño aplicado por Santiago y el estado del bloque. `GET /api/jugadas/{id}` permite consultarla. Los errores locales se comprueban antes de la escritura remota y también se verifican durante la transacción local.
 
@@ -476,6 +476,22 @@ OpenAPI local: `http://localhost:8080/v3/api-docs`, `http://localhost:8081/v3/ap
 
 ### Insomnia y comprobación
 
-Importar `insomnia/minecraft-poo09.json`, ajustar `a1_url`, `a2_url`, `a3_url`, `creeper_a2`, `jugador_a3`, `creeper_a3` y `bloque_a3`. Crear un creeper en Mateo y, en Santiago, un creeper en el origen, un jugador con salud completa y un bloque opcional; usar los cuerpos descritos en [la guía](docs/GUIA-COORDINACION-POO09.md). Ejecutar los pedidos 01 y 02 para crear objetivo y TNT locales con IDs nuevos. Ejecutar los rechazos 05 y 06, verificar que la TNT y el objetivo siguen iguales y, finalmente, el feliz 07. Copiar el ID retornado para el GET 08. Después del éxito, la TNT local no se puede usar de nuevo. La evidencia HTTP de copias locales y bases temporales está en [docs/EVIDENCIA-POO09.md](docs/EVIDENCIA-POO09.md).
+Importar `insomnia/minecraft-poo09.json`, ajustar `a1_url`, `a2_url`, `a3_url`, `creeper_a2`, `jugador_a3`, `creeper_a3` y `bloque_a3`. Crear un creeper en Mateo y, en Santiago, un creeper en el origen, un jugador con salud completa y un bloque de prueba; usar los cuerpos descritos en [la guía](docs/GUIA-COORDINACION-POO09.md). Ejecutar los pedidos 01 y 02 para crear objetivo y TNT locales con IDs nuevos. Ejecutar los rechazos 05 y 06, verificar que la TNT y el objetivo siguen iguales y, finalmente, el feliz 07. Copiar el ID retornado para el GET 08. Después del éxito, la TNT local no se puede usar de nuevo. La evidencia HTTP de copias locales y bases temporales está en [docs/EVIDENCIA-POO09.md](docs/EVIDENCIA-POO09.md).
+
+Ejemplo del cuerpo de `POST /api/jugadas`, con IDs de prueba que deben reemplazarse por los existentes:
+
+```json
+{
+  "creeperA2": 1,
+  "jugadorA3": "steve-prueba",
+  "creeperA3": "creeper-a3",
+  "radioA3": 5,
+  "bloqueA3": 1,
+  "tntId": "tnt-poo09",
+  "objetivoId": "pig-poo09"
+}
+```
+
+`bloqueA3` se puede omitir al invocar la API directamente; la colección incluida usa un bloque para demostrar también la regla de destrucción y el rechazo de A3. Un resultado 201 incluye `danoSimuladoA2`, `danoAplicadoA3`, `saludFinalA3` y `explosionId`.
 
 `POST /api/entidades/{id}/explosiones/validar` permite a compañeros calcular la regla de TNT de Lucas sin cambiar salud ni consumir una TNT. La operación valida una explosión hipotética: no comprueba una TNT persistida.
