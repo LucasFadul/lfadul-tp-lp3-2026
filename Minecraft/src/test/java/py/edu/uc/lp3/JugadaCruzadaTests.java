@@ -31,7 +31,7 @@ class JugadaCruzadaTests {
     @Autowired ExplosionRepository explosiones;
     @MockitoBean Matrf04Client a2;
     @MockitoBean Sadez7Client a3;
-    private static final String BODY = "{\"creeperA2\":1,\"jugadorA3\":\"steve\",\"tntId\":\"t1\",\"objetivoId\":\"pig\"}";
+    private static final String BODY = "{\"creeperA2\":1,\"jugadorA3\":\"steve\",\"tntId\":\"t1\",\"objetivoId\":\"pig\",\"creeperA3\":\"creeper\",\"radioA3\":5,\"bloqueA3\":1}";
 
     @BeforeEach
     void preparar() throws Exception {
@@ -49,6 +49,10 @@ class JugadaCruzadaTests {
         var jugador = new Sadez7Client.EntidadExterna("steve", "jugador", 20, 20, 0, 0, 0, 0);
         when(a3.listarVivos()).thenReturn(Mono.just(List.of(jugador)));
         when(a3.validarJugador(jugador)).thenReturn(Mono.just(new Sadez7Client.JugadorValidado("steve", 20, 20)));
+        when(a3.obtenerEntidad("creeper")).thenReturn(Mono.just(new Sadez7Client.EntidadExterna("creeper", "creeper", 20, 20, 0, 0, 0, 0)));
+        when(a3.simularExplosion("creeper", "steve", 5, 1L)).thenReturn(Mono.just(new Sadez7Client.ExplosionA3("creeper", 5.0,
+                List.of(new Sadez7Client.JugadorAfectado("steve", 0.0, 20, 20, 0)),
+                List.of(new Sadez7Client.BloqueAfectado(1L, true)))));
     }
     private void estadoSinCambios(long jugadasAntes, long explosionesAntes) throws Exception {
         assertThat(jugadas.count()).isEqualTo(jugadasAntes);
@@ -65,6 +69,8 @@ class JugadaCruzadaTests {
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.creeperA2").value(1))
                 .andExpect(jsonPath("$.danoSimuladoA2").value(10))
                 .andExpect(jsonPath("$.saludSimuladaA3").value(10))
+                .andExpect(jsonPath("$.danoAplicadoA3").value(20))
+                .andExpect(jsonPath("$.bloqueDestruidoA3").value(true))
                 .andExpect(jsonPath("$.jugadorA3").value("steve")).andReturn().getResponse().getHeader("Location");
         assertThat(jugadas.count()).isEqualTo(antes+1);
         mvc.perform(get(location)).andExpect(status().isOk()).andExpect(jsonPath("$.explosionId").isNumber());
@@ -110,6 +116,7 @@ class JugadaCruzadaTests {
         mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY))
                 .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.origen").value("A2"));
         estadoSinCambios(j,e);
+        verify(a3, never()).simularExplosion(anyString(), anyString(), anyDouble(), any());
     }
 
     @Test
@@ -131,5 +138,24 @@ class JugadaCruzadaTests {
         mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY)).andExpect(status().isBadRequest());
         verify(a2, never()).simularImpacto(anyInt(), anyDouble(), anyDouble(), anyDouble());
         estadoSinCambios(j,e);
+    }
+
+    @Test
+    void explosionRechazadaPorA3NoCambiaLaBaseLocal() throws Exception {
+        a2Acepta(); a3Acepta();
+        when(a3.simularExplosion("creeper", "steve", 5, 1L))
+                .thenReturn(Mono.error(new py.edu.uc.lp3.service.RechazoJugadaException("A3", "Bloque inexistente")));
+        long j=jugadas.count(), e=explosiones.count();
+        mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY))
+                .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.origen").value("A3"));
+        estadoSinCambios(j,e);
+    }
+
+    @Test
+    void tntLocalInexistenteNoEjecutaNadaEnLosCompaneros() throws Exception {
+        String invalido = BODY.replace("\"t1\"", "\"ausente\"");
+        mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(invalido))
+                .andExpect(status().isNotFound());
+        verifyNoInteractions(a2, a3);
     }
 }

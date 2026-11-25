@@ -23,7 +23,7 @@ public class JugadaCruzadaController {
     public JugadaCruzadaController(JugadaCruzadaService service) { this.service = service; }
 
     @Operation(summary = "Validar participantes externos y registrar una explosión local",
-            description = "Consulta creepers listos de A2 y jugadores vivos de A3, pide a A3 validar los datos del jugador y a A2 simular el daño usando su posición. A2 construye un jugador con salud máxima, por eso se requiere salud completa. Las consultas no modifican las bases remotas. Si aceptan, se guarda el resultado simulado y se ejecuta la explosión local en una transacción.")
+            description = "Comprueba la TNT local y el creeper de A2, valida el jugador y creeper de A3 y consulta la simulación de Mateo. Luego ejecuta la explosión de Santiago: modifica su jugador y puede destruir un bloque en A3. Finalmente guarda la explosión y jugada locales. No hay transacción distribuida: una falla posterior o timeout puede dejar cambios en A3 sin registro local.")
     @ApiResponse(responseCode = "201", description = "Jugada guardada")
     @ApiResponse(responseCode = "400", description = "Solicitud local inválida o jugador de A3 sin salud completa")
     @ApiResponse(responseCode = "404", description = "Recurso local inexistente")

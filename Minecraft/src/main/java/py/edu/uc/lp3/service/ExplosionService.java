@@ -49,6 +49,16 @@ public class ExplosionService {
 		return explosiones.save(new ExplosionEntity(tntId, objetivoId, saludAntes, registroObjetivo.getSalud(), dano));
 	}
 
+	/** Comprueba los recursos locales antes de ejecutar la operación con efectos de A3. */
+	@Transactional(readOnly = true)
+	public void validarParaJugada(String tntId, String objetivoId) {
+		TntEntity tnt = tnts.findById(tntId).orElseThrow(() -> new TntNotFoundException(tntId));
+		EntidadEntity objetivo = entidades.findById(objetivoId)
+				.orElseThrow(() -> new EntidadNotFoundException("No existe una entidad con id " + objetivoId));
+		reglas.calcularDano(tnt.getPosicion(), new Vector(objetivo.getX(), objetivo.getY(), objetivo.getZ()),
+				objetivo.getSalud(), objetivoId, tnt.isDetonada());
+	}
+
 	@Transactional(readOnly = true)
 	public ExplosionEntity obtenerExplosion(Long id) {
 		return explosiones.findById(id).orElseThrow(() -> new EntidadNotFoundException("No existe una explosion con id " + id));

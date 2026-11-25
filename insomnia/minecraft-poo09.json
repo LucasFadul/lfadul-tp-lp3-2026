@@ -23,7 +23,10 @@
         "jugador_a3": "steve",
         "tnt_id": "tnt-poo09",
         "objetivo_id": "pig-poo09",
-        "jugada_id": 1
+        "jugada_id": 1,
+        "creeper_a3": "creeper-a3",
+        "radio_a3": 5,
+        "bloque_a3": 1
       }
     },
     {
@@ -150,7 +153,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\"creeperA2\":999999999,\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\"}"
+        "text": "{\"creeperA2\":999999999,\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\",\"creeperA3\":\"{{ _.creeper_a3 }}\",\"radioA3\":{{ _.radio_a3 }},\"bloqueA3\":{{ _.bloque_a3 }}}"
       }
     },
     {
@@ -160,7 +163,7 @@
       "name": "06 Rechazo atribuido A3",
       "method": "POST",
       "url": "{{ _.a1_url }}/api/jugadas",
-      "description": "Esperado 422 con origen A3 si A2 confirma y ese jugador no está en la lista; repetir consultas 03 y 04.",
+      "description": "Santiago rechaza el bloque inexistente; debe devolver origen A3 y no guardar cambios locales.",
       "headers": [
         {
           "name": "Content-Type",
@@ -169,7 +172,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\"creeperA2\":{{ _.creeper_a2 }},\"jugadorA3\":\"jugador-inexistente-poo09\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\"}"
+        "text": "{\"creeperA2\":{{ _.creeper_a2 }},\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\",\"creeperA3\":\"{{ _.creeper_a3 }}\",\"radioA3\":{{ _.radio_a3 }},\"bloqueA3\":999999999}"
       }
     },
     {
@@ -179,7 +182,7 @@
       "name": "07 Escenario feliz",
       "method": "POST",
       "url": "{{ _.a1_url }}/api/jugadas",
-      "description": "Esperado 201; elegir ids que aparezcan en las listas. Copiar id a jugada_id.",
+      "description": "Modifica el jugador y bloque de Santiago. Usar datos de prueba acordados; requiere jugador con salud completa y TNT nueva.",
       "headers": [
         {
           "name": "Content-Type",
@@ -188,7 +191,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\"creeperA2\":{{ _.creeper_a2 }},\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\"}"
+        "text": "{\"creeperA2\":{{ _.creeper_a2 }},\"jugadorA3\":\"{{ _.jugador_a3 }}\",\"tntId\":\"{{ _.tnt_id }}\",\"objetivoId\":\"{{ _.objetivo_id }}\",\"creeperA3\":\"{{ _.creeper_a3 }}\",\"radioA3\":{{ _.radio_a3 }},\"bloqueA3\":{{ _.bloque_a3 }}}"
       }
     },
     {

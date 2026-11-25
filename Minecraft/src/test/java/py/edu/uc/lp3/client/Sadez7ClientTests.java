@@ -12,6 +12,27 @@ import static org.assertj.core.api.Assertions.*;
 
 class Sadez7ClientTests {
     @Test
+    void ejecutaExplosionDeSantiagoYLeeElResultado() {
+        WebClient web = WebClient.builder().baseUrl("http://example.test").exchangeFunction(request -> {
+            assertThat(request.method().name()).isEqualTo("POST");
+            assertThat(request.url().getPath()).isEqualTo("/simulacion/explosiones");
+            return Mono.just(ClientResponse.create(HttpStatus.OK).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body("{\"creeperId\":\"creeper\",\"radio\":5,\"jugadores\":[{\"id\":\"steve\",\"distancia\":2,\"danio\":12,\"saludAntes\":20,\"saludDespues\":8}],\"bloques\":[{\"id\":1,\"destruido\":true}]}").build());
+        }).build();
+        var resultado = new Sadez7Client(web).simularExplosion("creeper", "steve", 5, 1L).block();
+        assertThat(resultado.jugadores().get(0).danio()).isEqualTo(12);
+        assertThat(resultado.bloques().get(0).destruido()).isTrue();
+    }
+
+    @Test
+    void atribuyeA3ElRechazoDeSuExplosion() {
+        WebClient web = WebClient.builder().baseUrl("http://example.test")
+                .exchangeFunction(request -> Mono.just(ClientResponse.create(HttpStatus.NOT_FOUND).build())).build();
+        assertThatThrownBy(() -> new Sadez7Client(web).simularExplosion("ausente", "steve", 5, null).block())
+                .isInstanceOfSatisfying(py.edu.uc.lp3.service.RechazoJugadaException.class,
+                        ex -> assertThat(ex.getOrigen()).isEqualTo("A3"));
+    }
+    @Test
     void validaJugadorConSusDatosSinModificarLaBase() {
         WebClient web = WebClient.builder().baseUrl("http://example.test").exchangeFunction(request -> {
             assertThat(request.method().name()).isEqualTo("GET");

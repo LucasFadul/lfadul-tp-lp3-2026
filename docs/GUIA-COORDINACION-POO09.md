@@ -16,28 +16,38 @@ Mateo debe configurar `A2_URL` con la dirección de Santiago porque su simulaci�
 
 ## 2. Preparar participantes
 
-En Swagger de Mateo (`POST /entidades`) crear un creeper, con permiso del dueño, por ejemplo:
+En Swagger de Mateo (`POST /entidades`) crear un creeper de prueba:
 
 ```json
 {"tipo":"Creeper","vida":20,"danoBase":10,"velocidad":2}
 ```
 
-Anotar el `id` numérico de la respuesta. En Swagger de Santiago (`POST /entidades`) crear un jugador de prueba con salud completa:
+Anotar el `id` numérico. En Swagger de Santiago crear dos entidades con `POST /entidades`:
+
+```json
+{"tipo":"creeper","id":"creeper-a3","salud":20,"saludMaxima":20,"experiencia":0,"x":0,"y":0,"z":0}
+```
 
 ```json
 {"tipo":"jugador","id":"steve-prueba","salud":20,"saludMaxima":20,"experiencia":0,"x":2,"y":0,"z":0}
 ```
 
-Los nombres deben ser nuevos si ya existen. En Lucas, crear un cerdo y una TNT usando Insomnia 01 y 02. El programa necesita la posición y salud del jugador de Santiago y el creeper listo de Mateo. Los IDs son distintos en cada base.
+Opcionalmente crear con `POST /bloques` un bloque de prueba y anotar su ID:
+
+```json
+{"tipo":"tierra","x":1,"y":0,"z":0}
+```
+
+La explosión puede dañar ese jugador y destruir ese bloque en la base de Santiago. Acordar con él que son de prueba. En Lucas, crear cerdo y TNT con Insomnia 01 y 02.
 
 ## 3. Ejecutar los tres casos
 
-Importar `insomnia/minecraft-poo09.json` y ajustar URLs, IDs del creeper y jugador, y nombres de objetivo y TNT. Ejecutar 05 con creeper inexistente (422, A2), 06 con jugador inexistente (422, A3) y comprobar con 03 y 04 que la salud y la TNT de Lucas no cambiaron. Luego ejecutar 07 con datos válidos y consultar la jugada con 08 usando el ID retornado. La TNT se consume y se necesita otra para un nuevo éxito. La evidencia del caso está en [EVIDENCIA-POO09.md](EVIDENCIA-POO09.md).
+Importar `insomnia/minecraft-poo09.json` y ajustar URLs, IDs y radio. Ejecutar 05 con creeper inexistente (422 A2) y 06 con un bloque inexistente (Santiago responde 404; A1 traduce a 422 A3). Verificar con 03 y 04 que el objetivo y TNT de Lucas no cambiaron. Después ejecutar 07 con el bloque real y consultar la jugada mediante 08.
 
-El creeper y el jugador se consultan mediante GET. La simulación de Mateo calcula un jugador temporal; **no cambia** la salud de Santiago ni consume el creeper de Mateo. El objetivo y la TNT que sí cambian están en la base de Lucas. La ausencia de un participante se deduce de la lista; no es un 422 enviado por el compañero.
+Con el ejemplo, Mateo simula 10 puntos de daño sin escribir su base; Santiago aplica 12 de daño al jugador y destruye el bloque en su base; Lucas aplica 8 al cerdo y consume su TNT. Para repetir el éxito usar otro jugador con salud completa, otro bloque y otra TNT. Si se pierde la conexión después de llamar a Santiago, revisar sus datos antes de reintentar: su cambio podría haber quedado guardado sin registro en Lucas.
 
 ## 4. Qué explicar en la defensa
 
-Una API ofrece operaciones HTTP; OpenAPI las describe y Swagger permite probarlas. El controller recibe el pedido, `JugadaCruzadaService` coordina los clientes WebClient, y los repositorios guardan en H2. La transacción garantiza los cambios de Lucas como unidad, no puede revertir cambios ya confirmados en otra base. Explicar también los límites: el jugador simulado tiene salud completa, la regla explícita de A3 valida sus datos y el daño remoto es hipotético.
+Una API ofrece operaciones HTTP; OpenAPI las describe y Swagger permite probarlas. El controller recibe el pedido, `JugadaCruzadaService` coordina los clientes WebClient, y los repositorios guardan en H2. La transacción garantiza los cambios de Lucas como unidad, no puede revertir cambios ya confirmados en otra base. Explicar también los límites: el jugador simulado tiene salud completa, Mateo calcula daño hipotético, mientras que Santiago guarda el daño y la destrucción del bloque en su propia base.
 
 `POST /api/entidades/{id}/explosiones/validar` permite que los compañeros consulten la regla de Lucas sin escribir. `POST /api/entidades/{id}/explosiones` sí cambia la salud de la entidad local. `POST /api/explosiones` además usa y consume una TNT existente.

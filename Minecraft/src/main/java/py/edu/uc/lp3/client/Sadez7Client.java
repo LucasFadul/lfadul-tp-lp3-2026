@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import py.edu.uc.lp3.service.RechazoJugadaException;
 import reactor.core.publisher.Mono;
 
-/** Consulta de solo lectura al contrato público de SaDez7. */
+/** Cliente del contrato público de SaDez7; simularExplosion modifica su base. */
 @Component
 public class Sadez7Client {
     private final WebClient client;
@@ -51,4 +51,34 @@ public class Sadez7Client {
     }
 
     public record JugadorValidado(String id, Integer salud, Integer saludMaxima) { }
+
+    public Mono<EntidadExterna> obtenerEntidad(String id) {
+        return client.get().uri(uri -> uri.path("/entidades/{id}").build(id))
+                .retrieve().bodyToMono(EntidadExterna.class).timeout(Duration.ofSeconds(10))
+                .onErrorMap(WebClientResponseException.class, error -> error.getStatusCode().is4xxClientError()
+                        ? new RechazoJugadaException("A3", "Santiago no aceptó la entidad: " + error.getStatusCode().value())
+                        : new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se pudo consultar A3 (SaDez7)", error))
+                .onErrorMap(error -> error instanceof WebClientException || error instanceof TimeoutException,
+                        error -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se pudo consultar A3 (SaDez7)", error));
+    }
+
+    /** Esta operación actualiza la salud y, si se indica, el estado del bloque en A3. */
+    public Mono<ExplosionA3> simularExplosion(String creeperId, String jugadorId, double radio, Long bloqueId) {
+        var pedido = new PedidoExplosion(creeperId, radio, List.of(new ReferenciaJugador(jugadorId)),
+                bloqueId == null ? List.of() : List.of(new ReferenciaBloque(bloqueId)));
+        return client.post().uri("/simulacion/explosiones").bodyValue(pedido)
+                .retrieve().bodyToMono(ExplosionA3.class).timeout(Duration.ofSeconds(10))
+                .onErrorMap(WebClientResponseException.class, error -> error.getStatusCode().is4xxClientError()
+                        ? new RechazoJugadaException("A3", "Santiago rechazó la explosión: " + error.getStatusCode().value())
+                        : new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falló la explosión de A3; su resultado puede ser desconocido", error))
+                .onErrorMap(error -> error instanceof WebClientException || error instanceof TimeoutException,
+                        error -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falló la explosión de A3; su resultado puede ser desconocido", error));
+    }
+
+    public record PedidoExplosion(String creeperId, double radio, List<ReferenciaJugador> jugadores, List<ReferenciaBloque> bloques) { }
+    public record ReferenciaJugador(String id) { }
+    public record ReferenciaBloque(Long id) { }
+    public record ExplosionA3(String creeperId, Double radio, List<JugadorAfectado> jugadores, List<BloqueAfectado> bloques) { }
+    public record JugadorAfectado(String id, Double distancia, Integer danio, Integer saludAntes, Integer saludDespues) { }
+    public record BloqueAfectado(Long id, Boolean destruido) { }
 }
