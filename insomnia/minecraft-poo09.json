@@ -7,7 +7,7 @@
     {
       "_id": "wrk_poo09",
       "_type": "workspace",
-      "name": "Minecraft POO-09 (preliminar)",
+      "name": "Minecraft POO-09",
       "scope": "collection"
     },
     {
@@ -17,8 +17,8 @@
       "name": "Base Environment",
       "data": {
         "a1_url": "http://localhost:8080",
-        "a2_url": "http://25.28.15.25:8080",
-        "a3_url": "http://25.29.140.0:8080",
+        "a2_url": "http://localhost:8081",
+        "a3_url": "http://localhost:8082",
         "creeper_a2": 1,
         "jugador_a3": "steve",
         "tnt_id": "tnt-poo09",
@@ -43,7 +43,7 @@
       "name": "OpenAPI A2",
       "method": "GET",
       "url": "{{ _.a2_url }}/v3/api-docs",
-      "description": "A2: pendiente contrato publicado en su último commit.",
+      "description": "OpenAPI de Mateo, versión probada 8f32d13.",
       "headers": []
     },
     {
@@ -63,7 +63,7 @@
       "name": "A2 - Listar creepers listos (lectura)",
       "method": "GET",
       "url": "{{ _.a2_url }}/entidades/creepers/listos",
-      "description": "Consulta preliminar de solo lectura; no ejecuta el escenario POO-09.",
+      "description": "Consultar creepers listos en Mateo; no cambia su base.",
       "headers": []
     },
     {
@@ -73,7 +73,7 @@
       "name": "A3 - Listar entidades vivas (lectura)",
       "method": "GET",
       "url": "{{ _.a3_url }}/entidades/vivos",
-      "description": "Consulta preliminar de solo lectura; no ejecuta el escenario POO-09.",
+      "description": "Consultar jugadores vivos en Santiago; elegir uno con salud completa.",
       "headers": []
     },
     {
@@ -176,7 +176,7 @@
       "_id": "req_p09_feliz",
       "_type": "request",
       "parentId": "wrk_poo09",
-      "name": "07 Ambas consultas confirman",
+      "name": "07 Escenario feliz",
       "method": "POST",
       "url": "{{ _.a1_url }}/api/jugadas",
       "description": "Esperado 201; elegir ids que aparezcan en las listas. Copiar id a jugada_id.",

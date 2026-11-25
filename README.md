@@ -419,56 +419,63 @@ Con la aplicación iniciada, Swagger UI está disponible en [http://localhost:80
 
 La dirección del compañero se configura con `api.companero.base-url` en `application.properties`. Su servidor debe estar disponible desde la aplicación para que la consulta funcione. El endpoint también está disponible en Swagger UI, en **Integración con compañero**.
 
-### POO-09: grupo y trabajo pendiente
+### POO-09: grupo y reglas
 
-- A1: Lucas Fadul, [lfadul-tp-lp3-2026](https://github.com/LucasFadul/lfadul-tp-lp3-2026); OpenAPI local: `http://localhost:8080/v3/api-docs`.
-- A2: MatRF04, [mr-taller-git-2026](https://github.com/MatRF04/mr-taller-git-2026), commit consultado `727c53064c081ecfad8fdc4cc597d14a485150ab`. Esa copia local no publicó `/v3/api-docs` (404); el servicio visto por Hamachi sí publicó OpenAPI el 23/11/2026 en `http://25.28.15.25:8080/v3/api-docs`. Falta confirmar su commit.
-- A3: SaDez7, [sb-taller-git-2026](https://github.com/SaDez7/sb-taller-git-2026), commit consultado `1853e5226ce5aea60574fa0ebb4d8f8bbfb33aae`. OpenAPI local en `http://localhost:8082/v3/api-docs`. Su regla de explosión reduce el daño con la distancia y destruye bloques alcanzados; ver [sus reglas](https://github.com/SaDez7/sb-taller-git-2026#las-dos-reglas-de-negocio).
+| Rol | Alumno y repositorio | URL observada por Hamachi | OpenAPI | Reglas publicadas |
+| --- | --- | --- | --- | --- |
+| A1 | [Lucas Fadul](https://github.com/LucasFadul/lfadul-tp-lp3-2026) | `http://25.30.124.10:8080` | [A1](http://25.30.124.10:8080/v3/api-docs) | La TNT hace hasta 8 de daño a cuatro bloques o menos; se consume y no puede detonarse otra vez. |
+| A2 | [Mateo Ríos](https://github.com/MatRF04/mr-taller-git-2026) | `http://25.28.15.25:8080` | [A2](http://25.28.15.25:8080/v3/api-docs) | Un creeper vivo explota una sola vez; causa hasta 10 de daño a tres bloques o menos. [Reglas de Mateo](https://github.com/MatRF04/mr-taller-git-2026#simulación-de-explosiones). |
+| A3 | [Santiago Baez](https://github.com/SaDez7/sb-taller-git-2026) | `http://25.29.140.0:8080` | [A3](http://25.29.140.0:8080/v3/api-docs) | El daño de explosión disminuye con la distancia; un bloque dentro del radio queda destruido. [Reglas de Santiago](https://github.com/SaDez7/sb-taller-git-2026#las-dos-reglas-de-negocio). |
 
-Se prepararon clientes de solo lectura para `GET /entidades/creepers/listos` de A2 y `GET /entidades/vivos` de A3. Sus URLs se configuran con `API_A2_BASE_URL` y `API_A3_BASE_URL`, o con `api.a2.base-url` y `api.a3.base-url`. La consulta de A2 es provisional: la ruta y la regla aparecen en el OpenAPI observado en clase y en el README del commit consultado, pero ese commit no publicó OpenAPI al ejecutarlo. `POST /api/jugadas` usa estas listas como verificaciones previas y guarda una explosión y una jugada locales si ambos participantes aparecen. La ausencia se interpreta en A1 como un rechazo atribuido a la lista de A2 o A3: las APIs devuelven listas HTTP 200 y no un rechazo explícito. Falta confirmar con la cátedra o compañeros si estas verificaciones satisfacen las reglas de explosión exigidas; no se pretende que las simulaciones remotas de explosión se hayan ejecutado.
+Esas IP eran válidas en la sesión de Hamachi del 23/11; se pueden cambiar con variables de entorno. Versiones públicas consultadas el 25/11: [Mateo `8f32d13`](https://github.com/MatRF04/mr-taller-git-2026/commit/8f32d13a4857be25d8b1ab86fe552449c0cd83ab) y [Santiago `763df1c`](https://github.com/SaDez7/sb-taller-git-2026/commit/763df1c80a8882f443be6489e2aefaa8d6de0b24). Son versiones probadas, no una afirmación de que sus autores no harán más cambios.
 
-La colección `insomnia/minecraft-poo09.json` incluye preparación local, consultas, ausencia en A2, ausencia en A3, caso feliz y consulta de jugada. Las variables de ids deben ajustarse a las entidades disponibles. Las dos ausencias reales se comprobaron por Hamachi y el caso feliz se observó con ambas APIs reales el 23/11/2026 (HTTP 201, jugada 1 y explosión 5). Para repetirlo hacen falta IDs presentes y una TNT local sin detonar.
+### Escenario y límites
 
-### Estado de la corrección POO-08 (21/24)
+Un creeper listo de Mateo amenaza a un jugador vivo de Santiago y se registra una explosión de TNT en Lucas. `POST /api/jugadas` recibe los IDs del creeper A2 y jugador A3, y una TNT y un objetivo de A1. En este orden:
 
-- **Base H2 en Git:** se dejó de seguir `Minecraft/data/minecraftdb.mv.db` sin borrar la copia local y se excluyeron `*.mv.db` y `*.trace.db` con `.gitignore`. La eliminación del índice y los cambios aún deben incluirse en el commit de entrega.
-- **Capas y validaciones:** se retiraron excepciones de las entidades del dominio y persistencia. `ReglasCombateService` valida el jugador y aplica salud/combate; `ReglasExplosionService` valida coordenadas y calcula daño de TNT; `EntidadService` valida el CRUD y `ExplosionService` coordina la transacción. Los mensajes de comportamiento y capacidades de ejemplos anteriores permanecen en el modelo para conservar su demostración de interfaces y polimorfismo.
-- **Documentación:** se actualizaron paquetes, enlace de especificaciones y jerarquía de excepciones; los ejemplos de combate ahora apuntan al servicio.
+1. A1 consulta `GET /entidades/creepers/listos` de A2. Si no encuentra el creeper, responde 422 con `origen: A2`.
+2. A1 consulta `GET /entidades/vivos` de A3. Si no encuentra el jugador, responde 422 con `origen: A3`. Además requiere que su salud actual coincida con la máxima: la simulación de Mateo construye un jugador nuevo con salud máxima y no admite salud actual distinta; de otro modo se informa 400 local.
+3. A1 consulta `GET /jugador` de A3 con los datos del jugador para validar su construcción (salud máxima positiva y demás parámetros). Si A3 responde con error 4xx, A1 lo atribuye a A3. Esta validación es de construcción del jugador; **no ejecuta las reglas de daño o bloques de A3**.
+4. A1 llama a `GET /simulaciones/creeper/jugador` de A2 con la salud máxima y posición obtenidas de A3. Mateo consulta a su vez `GET /jugador` de Santiago y calcula su propia regla de daño. La simulación de Mateo supone el creeper en el origen y construye un jugador temporal; no comprueba el id del creeper ni modifica ninguna base. Si A2 responde 4xx, A1 atribuye el rechazo a A2.
+5. Solo después de las consultas, A1 ejecuta su explosión y guarda la jugada y el resultado simulado (`distanciaJugadorA3`, `danoSimuladoA2`, `saludSimuladaA3`) en una transacción local. Una falla de red o respuesta inválida da 502. `GET /api/jugadas/{id}` recupera el registro.
 
-### Arranque local para POO-09
+La ausencia en las listas es una decisión de A1 a partir de respuestas HTTP 200, no un rechazo enviado por los compañeros. La validación explícita de A3 verifica los datos de un jugador, no su simulación de explosión. Por esa razón queda a criterio de la cátedra si esta combinación satisface la exigencia de validar el mismo hecho con las reglas de ambos. Las llamadas remotas son GET: la salud de Santiago y el creeper de Mateo no se cambian. El resultado del jugador es hipotético; la TNT y el objetivo son recursos locales. La operación no ofrece una transacción entre servidores.
 
-Usar copias independientes y versiones confirmadas de los dos repositorios. La revisión actual usó los commits indicados arriba; deben actualizarse cuando los compañeros confirmen sus versiones de entrega. En terminales separadas:
+### Corrección POO-08 (21/24)
+
+- H2 generado: `Minecraft/data/minecraftdb.mv.db` ya no está versionado; `.gitignore` excluye archivos de H2. La aplicación usa `${user.home}/.lp3-minecraft`.
+- Capas y validaciones: se retiraron las excepciones de las entidades y se movieron las validaciones y el cálculo de TNT a `ReglasCombateService`, `ReglasExplosionService`, `EntidadService` y `ExplosionService`. El modelo conserva métodos de comportamiento ilustrativos de POO anteriores; corresponde a la cátedra valorar esa interpretación de la observación sobre dominio.
+- README: se actualizaron la organización de paquetes, el vínculo a especificaciones y la jerarquía de excepciones.
+
+### Arranque local de las tres versiones
+
+Clonar los repositorios y usar una terminal por copia. Para el proyecto propio seleccionar el commit de entrega. Para las copias de los compañeros:
 
 ```bash
-# Desde la raíz de cada copia:
-# A1 - este repositorio
-./mvnw spring-boot:run
-
-# A2 - copia de MatRF04
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
-
-# A3 - copia de SaDez7
+# Terminal 1: Santiago (A3)
+git clone https://github.com/SaDez7/sb-taller-git-2026.git
+cd sb-taller-git-2026
+git checkout 763df1c80a8882f443be6489e2aefaa8d6de0b24
 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8082"
 ```
 
-A1 usa por defecto `http://localhost:8081` para A2 y `http://localhost:8082` para A3. Una aplicación por puerto; cada copia mantiene su propia base. La colección consulta los OpenAPI, las listas y el endpoint de jugadas. A2 y A3 devuelven listas; A1 interpreta la ausencia como rechazo atribuido. Debe confirmarse la adecuación de estas reglas al enunciado y comprobar el caso feliz con las dos APIs reales.
-
-### Jugada cruzada provisional
-
-`POST /api/jugadas` recibe `creeperA2` (id numérico en A2), `jugadorA3` (id en A3), `tntId` y `objetivoId` (ambos en A1). Consulta primero `GET /entidades/creepers/listos` de A2; si el id no aparece, A1 devuelve 422 con `origen: A2`. Luego consulta `GET /entidades/vivos` de A3; si el jugador no aparece, A1 devuelve 422 con `origen: A3`. El orden evita consultar A3 si falla la primera comprobación. Una falla de conexión devuelve 502.
-
-Si ambas listas contienen los participantes, una transacción local ejecuta la simulación de TNT y guarda `jugadas_cruzadas` con el id de la explosión. `GET /api/jugadas/{id}` consulta el registro y `GET /api/explosiones/{explosionId}` muestra el resultado. Los identificadores externos y locales son independientes: la operación no sincroniza entidades entre las bases. Los servicios de compañeros solo se consultan con GET.
-
-Para repetir: crear en A1 un objetivo y una TNT, elegir ids de las listas reales y ejecutar los pedidos 05 a 08 de Insomnia. Las simulaciones remotas de explosión **no** se invocan; la aceptación o rechazo es inferencia de A1 a partir de las listas. La cátedra debe confirmar si esto cumple el requisito de validación de reglas de explosión y rechazo explícito.
-
-### Validación de explosión sin cambios
-
-`POST /api/entidades/{id}/explosiones/validar` recibe el mismo cuerpo de posición que la simulación sobre entidad. Calcula el daño de TNT de Lucas (radio 4, hasta 8 de daño), pero no cambia la salud ni guarda una explosión ni consume una TNT. Responde 200 con `saludAnterior`, `saludActual` simulada y `danoAplicado`; 400 si falta o es inválida la posición, 404 si no existe la entidad y 409 si no tiene vida. La operación valida una explosión hipotética: no verifica ni consume una TNT persistida.
-
-```json
-{ "posicion": { "x": 0, "y": 0, "z": 0 } }
+```bash
+# Terminal 2: Mateo (A2). A2_URL es la ubicación de Santiago para Mateo.
+git clone https://github.com/MatRF04/mr-taller-git-2026.git
+cd mr-taller-git-2026
+git checkout 8f32d13a4857be25d8b1ab86fe552449c0cd83ab
+A2_URL=http://localhost:8082 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
 ```
 
-### Guía para coordinar y probar
+```bash
+# Terminal 3: Lucas (A1), desde la raíz de este repositorio
+API_A2_BASE_URL=http://localhost:8081 API_A3_BASE_URL=http://localhost:8082 ./mvnw spring-boot:run
+```
 
-Ver [docs/GUIA-COORDINACION-POO09.md](docs/GUIA-COORDINACION-POO09.md) para preparar objetivos en cada proyecto, entender qué bases cambian y ejecutar las pruebas del escenario provisional.
+OpenAPI local: `http://localhost:8080/v3/api-docs`, `http://localhost:8081/v3/api-docs` y `http://localhost:8082/v3/api-docs`. Swagger propio: `http://localhost:8080/swagger-ui/index.html`. Con Hamachi, reemplazar las URLs por las IP vigentes; Mateo también debe configurar su propia `A2_URL` para llegar a Santiago. Los servicios usan bases independientes.
+
+### Insomnia y comprobación
+
+Importar `insomnia/minecraft-poo09.json`, ajustar `a1_url`, `a2_url`, `a3_url`, `creeper_a2` y `jugador_a3`. Crear un creeper en Mateo y un jugador con salud completa en Santiago; usar los cuerpos descritos en [la guía](docs/GUIA-COORDINACION-POO09.md). Ejecutar los pedidos 01 y 02 para crear objetivo y TNT locales con IDs nuevos. Ejecutar los rechazos 05 y 06, verificar que la TNT y el objetivo siguen iguales y, finalmente, el feliz 07. Copiar el ID retornado para el GET 08. Después del éxito, la TNT local no se puede usar de nuevo. La evidencia HTTP de copias locales y bases temporales está en [docs/EVIDENCIA-POO09.md](docs/EVIDENCIA-POO09.md).
+
+`POST /api/entidades/{id}/explosiones/validar` permite a compañeros calcular la regla de TNT de Lucas sin cambiar salud ni consumir una TNT. La operación valida una explosión hipotética: no comprueba una TNT persistida.

@@ -43,9 +43,12 @@ class JugadaCruzadaTests {
 
     private void a2Acepta() {
         when(a2.listarCreepersListos()).thenReturn(Mono.just(List.of(new Matrf04Client.CreeperExterno(1L, "Creeper", 20, 5, 2, false))));
+        when(a2.simularImpacto(20, 0, 0, 0)).thenReturn(Mono.just(new Matrf04Client.ImpactoJugador("Steve", 0.0, 20, 10, 10)));
     }
     private void a3Acepta() {
-        when(a3.listarVivos()).thenReturn(Mono.just(List.of(new Sadez7Client.EntidadExterna("steve", "jugador", 20, 20, 0, 0, 0, 0))));
+        var jugador = new Sadez7Client.EntidadExterna("steve", "jugador", 20, 20, 0, 0, 0, 0);
+        when(a3.listarVivos()).thenReturn(Mono.just(List.of(jugador)));
+        when(a3.validarJugador(jugador)).thenReturn(Mono.just(new Sadez7Client.JugadorValidado("steve", 20, 20)));
     }
     private void estadoSinCambios(long jugadasAntes, long explosionesAntes) throws Exception {
         assertThat(jugadas.count()).isEqualTo(jugadasAntes);
@@ -60,6 +63,8 @@ class JugadaCruzadaTests {
         long antes=jugadas.count();
         String location = mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.creeperA2").value(1))
+                .andExpect(jsonPath("$.danoSimuladoA2").value(10))
+                .andExpect(jsonPath("$.saludSimuladaA3").value(10))
                 .andExpect(jsonPath("$.jugadorA3").value("steve")).andReturn().getResponse().getHeader("Location");
         assertThat(jugadas.count()).isEqualTo(antes+1);
         mvc.perform(get(location)).andExpect(status().isOk()).andExpect(jsonPath("$.explosionId").isNumber());
@@ -94,6 +99,37 @@ class JugadaCruzadaTests {
         long j=jugadas.count(), e=explosiones.count();
         mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY))
                 .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.origen").value("A3"));
+        estadoSinCambios(j,e);
+    }
+
+    @Test
+    void rechazoDeSimulacionDeA2NoCambiaLaBase() throws Exception {
+        a2Acepta(); a3Acepta();
+        when(a2.simularImpacto(20, 0, 0, 0)).thenReturn(Mono.error(new py.edu.uc.lp3.service.RechazoJugadaException("A2", "Simulación rechazada")));
+        long j=jugadas.count(), e=explosiones.count();
+        mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY))
+                .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.origen").value("A2"));
+        estadoSinCambios(j,e);
+    }
+
+    @Test
+    void rechazoExplicitoDeA3NoCambiaLaBase() throws Exception {
+        a2Acepta(); a3Acepta();
+        when(a3.validarJugador(any())).thenReturn(Mono.error(new py.edu.uc.lp3.service.RechazoJugadaException("A3", "Jugador rechazado")));
+        long j=jugadas.count(), e=explosiones.count();
+        mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY))
+                .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.origen").value("A3"));
+        verify(a2, never()).simularImpacto(anyInt(), anyDouble(), anyDouble(), anyDouble());
+        estadoSinCambios(j,e);
+    }
+
+    @Test
+    void jugadorConSaludParcialNoSeSimulaComoSiEstuvieraSano() throws Exception {
+        a2Acepta();
+        when(a3.listarVivos()).thenReturn(Mono.just(List.of(new Sadez7Client.EntidadExterna("steve", "jugador", 12, 20, 0, 0, 0, 0))));
+        long j=jugadas.count(), e=explosiones.count();
+        mvc.perform(post("/api/jugadas").contentType(MediaType.APPLICATION_JSON).content(BODY)).andExpect(status().isBadRequest());
+        verify(a2, never()).simularImpacto(anyInt(), anyDouble(), anyDouble(), anyDouble());
         estadoSinCambios(j,e);
     }
 }

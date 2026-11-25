@@ -343,3 +343,9 @@ Se integró el historial remoto antes del push. La interfaz AtacaJugador de una 
 - Se agregó `docs/GUIA-COORDINACION-POO09.md` con contratos, efectos en cada base, pasos de prueba y limitaciones del escenario provisional. Se actualizó el README y el borrador de especificaciones con la evidencia del caso feliz observado por el usuario (HTTP 201, jugada 1, explosión 5).
 - No se crearon ni modificaron entidades remotas en este trabajo de documentación. La implementación definitiva, la validación de reglas de los compañeros y los commits finales continúan pendientes.
 - Se actualizaron los dos PDF de estudio y presentación para indicar la prueba real exitosa y documentar la validación de explosión sin cambios; se renderizaron y revisaron visualmente.
+
+## POO-09 — integración final de trabajo, 25 de noviembre de 2026
+
+- Solicitud: terminar la entrega según el criterio del asistente y comprobar los requisitos. Se consultaron los repositorios públicos y se probaron las versiones de Mateo `8f32d13a4857be25d8b1ab86fe552449c0cd83ab` y Santiago `763df1c80a8882f443be6489e2aefaa8d6de0b24`, sin copiar sus reglas de dominio.
+- La jugada conserva la consulta de creepers listos y jugadores vivos, valida los datos del jugador mediante `GET /jugador` de Santiago y usa la simulación de daño `GET /simulaciones/creeper/jugador` de Mateo. La simulación usa salud completa y posición del jugador, guarda el resultado en A1 y no modifica las bases ajenas. La validación de A3 no ejecuta sus reglas de explosión.
+- Se ajustaron pruebas para aislar H2 en memoria, se actualizaron documentación, colección e indicaciones para iniciar las tres copias, y se guardaron respuestas de ejemplo en `docs/EVIDENCIA-POO09.md`. Se probaron los tres servicios y OpenAPI con datos temporales: caso feliz y dos ausencias con origen; los cambios de A1 se verificaron por GET. Las IP de Hamachi no respondían en esta sesión.

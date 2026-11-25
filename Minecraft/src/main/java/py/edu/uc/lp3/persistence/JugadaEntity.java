@@ -13,12 +13,21 @@ public class JugadaEntity {
     private Long creeperA2;
     private String jugadorA3;
     private Long explosionId;
+    private Double distanciaJugadorA3;
+    private Integer danoSimuladoA2;
+    private Integer saludSimuladaA3;
     protected JugadaEntity() { }
-    public JugadaEntity(Long creeperA2, String jugadorA3, Long explosionId) {
+    public JugadaEntity(Long creeperA2, String jugadorA3, Long explosionId, Double distanciaJugadorA3,
+            Integer danoSimuladoA2, Integer saludSimuladaA3) {
         this.creeperA2 = creeperA2; this.jugadorA3 = jugadorA3; this.explosionId = explosionId;
+        this.distanciaJugadorA3 = distanciaJugadorA3; this.danoSimuladoA2 = danoSimuladoA2;
+        this.saludSimuladaA3 = saludSimuladaA3;
     }
     public Long getId() { return id; }
     public Long getCreeperA2() { return creeperA2; }
     public String getJugadorA3() { return jugadorA3; }
     public Long getExplosionId() { return explosionId; }
+    public Double getDistanciaJugadorA3() { return distanciaJugadorA3; }
+    public Integer getDanoSimuladoA2() { return danoSimuladoA2; }
+    public Integer getSaludSimuladaA3() { return saludSimuladaA3; }
 }

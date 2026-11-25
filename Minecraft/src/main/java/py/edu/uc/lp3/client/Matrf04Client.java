@@ -10,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+import py.edu.uc.lp3.service.RechazoJugadaException;
 import reactor.core.publisher.Mono;
 
 /** Consulta provisional de solo lectura: creepers que la API A2 considera listos. */
@@ -34,4 +36,20 @@ public class Matrf04Client {
 
     public record CreeperExterno(Long id, String tipo, Integer vida, Integer danoBase,
             Integer velocidad, Boolean yaExploto) { }
+
+    /** Mateo calcula el impacto sin modificar su base; consulta a Santiago para construir el jugador. */
+    public Mono<ImpactoJugador> simularImpacto(int saludMaxima, double x, double y, double z) {
+        return client.get().uri(uri -> uri.path("/simulaciones/creeper/jugador")
+                .queryParam("saludMaxima", saludMaxima).queryParam("x", x)
+                .queryParam("y", y).queryParam("z", z).build())
+                .retrieve().bodyToMono(ImpactoJugador.class).timeout(Duration.ofSeconds(10))
+                .onErrorMap(WebClientResponseException.class, error -> error.getStatusCode().is4xxClientError()
+                        ? new RechazoJugadaException("A2", "Mateo rechazó la simulación: " + error.getStatusCode().value())
+                        : new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se pudo consultar A2 (MatRF04)", error))
+                .onErrorMap(error -> error instanceof WebClientException || error instanceof TimeoutException,
+                        error -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se pudo consultar A2 (MatRF04)", error));
+    }
+
+    public record ImpactoJugador(String jugador, Double distancia, Integer vidaAnterior,
+            Integer danoRecibido, Integer vidaFinal) { }
 }

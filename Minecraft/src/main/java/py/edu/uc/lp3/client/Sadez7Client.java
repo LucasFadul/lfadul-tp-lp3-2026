@@ -10,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+import py.edu.uc.lp3.service.RechazoJugadaException;
 import reactor.core.publisher.Mono;
 
 /** Consulta de solo lectura al contrato público de SaDez7. */
@@ -34,4 +36,19 @@ public class Sadez7Client {
 
     public record EntidadExterna(String id, String tipo, int salud, int saludMaxima,
             Integer experiencia, double x, double y, double z) { }
+
+    /** Valida el mismo jugador en la operación de construcción de Santiago, sin persistirlo. */
+    public Mono<JugadorValidado> validarJugador(EntidadExterna jugador) {
+        return client.get().uri(uri -> uri.path("/jugador").queryParam("id", jugador.id())
+                .queryParam("saludMaxima", jugador.saludMaxima()).queryParam("experiencia", jugador.experiencia() == null ? 0 : jugador.experiencia())
+                .queryParam("x", jugador.x()).queryParam("y", jugador.y()).queryParam("z", jugador.z()).build())
+                .retrieve().bodyToMono(JugadorValidado.class).timeout(Duration.ofSeconds(10))
+                .onErrorMap(WebClientResponseException.class, error -> error.getStatusCode().is4xxClientError()
+                        ? new RechazoJugadaException("A3", "Santiago rechazó al jugador: " + error.getStatusCode().value())
+                        : new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se pudo consultar A3 (SaDez7)", error))
+                .onErrorMap(error -> error instanceof WebClientException || error instanceof TimeoutException,
+                        error -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se pudo consultar A3 (SaDez7)", error));
+    }
+
+    public record JugadorValidado(String id, Integer salud, Integer saludMaxima) { }
 }

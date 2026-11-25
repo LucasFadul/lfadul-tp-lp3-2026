@@ -33,9 +33,21 @@ public class JugadaCruzadaService {
             throw new RechazoJugadaException("A2", "El creeper no figura entre los listos para explotar");
         var vivos = a3.listarVivos().block();
         if (vivos == null) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Respuesta vacía de A3");
-        if (vivos.stream().noneMatch(e -> Objects.equals(e.id(), request.jugadorA3()) && "jugador".equalsIgnoreCase(e.tipo())))
-            throw new RechazoJugadaException("A3", "El jugador no figura entre las entidades vivas");
-        return guardar.guardar(request);
+        var jugador = vivos.stream().filter(e -> Objects.equals(e.id(), request.jugadorA3()) && "jugador".equalsIgnoreCase(e.tipo()))
+                .findFirst().orElseThrow(() -> new RechazoJugadaException("A3", "El jugador no figura entre las entidades vivas"));
+        // La simulación de Mateo construye un jugador nuevo con salud máxima, no acepta salud actual.
+        if (jugador.salud() != jugador.saludMaxima())
+            throw new EntidadInvalidaException("La simulación de A2 requiere un jugador de A3 con salud completa");
+        var validado = a3.validarJugador(jugador).block();
+        if (validado == null || !Objects.equals(validado.id(), jugador.id()) ||
+                !Objects.equals(validado.salud(), jugador.salud()) ||
+                !Objects.equals(validado.saludMaxima(), jugador.saludMaxima()))
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Respuesta incompleta o inconsistente de A3");
+        var impacto = a2.simularImpacto(jugador.saludMaxima(), jugador.x(), jugador.y(), jugador.z()).block();
+        if (impacto == null || impacto.distancia() == null || impacto.vidaAnterior() == null ||
+                impacto.danoRecibido() == null || impacto.vidaFinal() == null)
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Respuesta incompleta de A2");
+        return guardar.guardar(request, impacto);
     }
 
     public JugadaEntity obtener(Long id) {

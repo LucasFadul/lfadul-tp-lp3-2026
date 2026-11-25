@@ -12,6 +12,18 @@ import static org.assertj.core.api.Assertions.*;
 
 class Sadez7ClientTests {
     @Test
+    void validaJugadorConSusDatosSinModificarLaBase() {
+        WebClient web = WebClient.builder().baseUrl("http://example.test").exchangeFunction(request -> {
+            assertThat(request.method().name()).isEqualTo("GET");
+            assertThat(request.url().getPath()).isEqualTo("/jugador");
+            assertThat(request.url().getQuery()).contains("id=steve", "saludMaxima=20", "x=2.0");
+            return Mono.just(ClientResponse.create(HttpStatus.OK).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body("{\"id\":\"steve\",\"salud\":20,\"saludMaxima\":20}").build());
+        }).build();
+        var jugador = new Sadez7Client.EntidadExterna("steve", "jugador", 20, 20, 0, 2, 0, 0);
+        assertThat(new Sadez7Client(web).validarJugador(jugador).block().id()).isEqualTo("steve");
+    }
+    @Test
     void consultaElListadoDeEntidadesVivas() {
         WebClient web = WebClient.builder().baseUrl("http://example.test").exchangeFunction(request -> {
             assertThat(request.url().getPath()).isEqualTo("/entidades/vivos");
